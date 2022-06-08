@@ -7,6 +7,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use App\CentralLogics\Helpers;
 use App\Models\BusinessSetting;
+use Illuminate\Support\Facades\Mail;
 
 class DeliveryManController extends Controller
 {
@@ -35,7 +36,7 @@ class DeliveryManController extends Controller
             'f_name' => 'required|max:100',
             'l_name' => 'nullable|max:100',
             'identity_number' => 'required|max:30',
-            'email' => 'required|unique:delivery_men',
+            'email' => 'required|email|unique:delivery_men',
             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|unique:delivery_men',
             'zone_id' => 'required',
             'earning' => 'required',
@@ -78,6 +79,13 @@ class DeliveryManController extends Controller
         $dm->password = bcrypt($request->password);
         $dm->application_status= 'pending';
         $dm->save();
+        try{
+            if(config('mail.status')){
+                Mail::to($request['email'])->send(new \App\Mail\SelfRegistration('pending', $dm->f_name.' '.$dm->l_name));
+            }
+        }catch(\Exception $ex){
+            info($ex);
+        }
 
         Toastr::success(trans('messages.application_placed_successfully'));
         return back();

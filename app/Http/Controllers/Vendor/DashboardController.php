@@ -45,15 +45,10 @@ class DashboardController extends Controller
         $top_sell = Food::orderBy("order_count", 'desc')
             ->take(6)
             ->get();
-        $most_rated_foods = Food::rightJoin('reviews', 'reviews.food_id', '=', 'food.id')
-            ->groupBy('food_id')
-            ->select(['food_id',
-                DB::raw('AVG(reviews.rating) as ratings_average'),
-                DB::raw('count(*) as total')
-            ])
-            ->orderBy('total', 'desc')
-            ->take(6)
-            ->get();
+        $most_rated_foods = Food::
+        orderBy('rating_count','desc')
+        ->take(6)
+        ->get();
         $data['top_sell'] = $top_sell;
         $data['most_rated_foods'] = $most_rated_foods;
 
@@ -102,7 +97,7 @@ class DashboardController extends Controller
             return $query->whereDate('created_at', Carbon::today());
         })->when($this_month, function ($query) {
             return $query->whereMonth('created_at', Carbon::now());
-        })->where(['restaurant_id' => Helpers::get_restaurant_id()])->whereIn('order_status',['confirmed', 'accepted'])->whereNotNull('confirmed')->Notpos()->count();
+        })->where(['restaurant_id' => Helpers::get_restaurant_id()])->whereIn('order_status',['confirmed', 'accepted'])->whereNotNull('confirmed')->OrderScheduledIn(30)->Notpos()->count();
 
         $cooking = Order::when($today, function ($query) {
             return $query->whereDate('created_at', Carbon::today());
@@ -138,17 +133,19 @@ class DashboardController extends Controller
             return $query->whereDate('created_at', Carbon::today());
         })->when($this_month, function ($query) {
             return $query->whereMonth('created_at', Carbon::now());
-        })->Scheduled()->where(['restaurant_id' => Helpers::get_restaurant_id()])->where(function($q){
-            if(config('order_confirmation_model') == 'restaurant')
-            {
-                $q->whereNotIn('order_status',['failed','canceled', 'refund_requested', 'refunded']);
-            }
-            else
-            {
-                $q->whereNotIn('order_status',['pending','failed','canceled', 'refund_requested', 'refunded'])->orWhere(function($query){
-                    $query->where('order_status','pending')->where('order_type', 'take_away');
-                });
-            }
+        })->Scheduled()->where(['restaurant_id' => Helpers::get_restaurant_id()])->where(function($query){
+            $query->Scheduled()->where(function($q){
+                if(config('order_confirmation_model') == 'restaurant' || Helpers::get_restaurant_data()->self_delivery_system)
+                {
+                    $q->whereNotIn('order_status',['failed','canceled', 'refund_requested', 'refunded']);
+                }
+                else
+                {
+                    $q->whereNotIn('order_status',['pending','failed','canceled', 'refund_requested', 'refunded'])->orWhere(function($query){
+                        $query->where('order_status','pending')->where('order_type', 'take_away');
+                    });
+                }
+            });
 
         })->Notpos()->count();
 

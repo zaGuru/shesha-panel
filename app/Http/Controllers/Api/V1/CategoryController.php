@@ -15,7 +15,7 @@ class CategoryController extends Controller
     {
         try {
             $categories = Category::where(['position'=>0,'status'=>1])->orderBy('priority','desc')->get();
-            return response()->json($categories, 200);
+            return response()->json(Helpers::category_data_formatting($categories, true), 200);
         } catch (\Exception $e) {
             return response()->json([], 200);
         }
@@ -25,7 +25,7 @@ class CategoryController extends Controller
     {
         try {
             $categories = Category::where(['parent_id' => $id,'status'=>1])->orderBy('priority','desc')->get();
-            return response()->json($categories, 200);
+            return response()->json(Helpers::category_data_formatting($categories, true), 200);
         } catch (\Exception $e) {
             return response()->json([], 200);
         }
@@ -49,12 +49,12 @@ class CategoryController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
 
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
 
         $type = $request->query('type', 'all');
 
         $data = CategoryLogic::products($id, $zone_id, $request['limit'], $request['offset'], $type);
-        $data['products'] = Helpers::product_data_formatting($data['products'] , true);
+        $data['products'] = Helpers::product_data_formatting($data['products'] , true, false, app()->getLocale());
         return response()->json($data, 200);
     }
 
@@ -77,7 +77,7 @@ class CategoryController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
 
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
 
         $type = $request->query('type', 'all');
 
@@ -90,17 +90,8 @@ class CategoryController extends Controller
 
     public function get_all_products($id,Request $request)
     {
-        if (!$request->hasHeader('zoneId')) {
-            $errors = [];
-            array_push($errors, ['code' => 'zoneId', 'message' => trans('messages.zone_id_required')]);
-            return response()->json([
-                'errors' => $errors
-            ], 403);
-        }
-        $zone_id= $request->header('zoneId');
-
         try {
-            return response()->json(Helpers::product_data_formatting(CategoryLogic::all_products($id, $zone_id), true), 200);
+            return response()->json(Helpers::product_data_formatting(CategoryLogic::all_products($id), true, false, app()->getLocale()), 200);
         } catch (\Exception $e) {
             return response()->json([], 200);
         }

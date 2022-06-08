@@ -109,7 +109,6 @@
                             </div>
                             <!-- End Checkbox -->
 
-                            <!--
                             {{-- recaptcha --}}
                             @php($recaptcha = \App\CentralLogics\Helpers::get_business_settings('recaptcha'))
                             @if(isset($recaptcha) && $recaptcha['status'] == 1)
@@ -119,14 +118,13 @@
                                 <div class="row p-2">
                                     <div class="col-6 pr-0">
                                         <input type="text" class="form-control form-control-lg" name="custome_recaptcha"
-                                               id="custome_recaptcha" required placeholder="{{\__('Enter recaptcha value')}}" style="border: none" autocomplete="off">
+                                               id="custome_recaptcha" required placeholder="{{\__('Enter recaptcha value')}}" style="border: none" autocomplete="off" value="{{env('APP_DEBUG')?session('six_captcha'):''}}">
                                     </div>
                                     <div class="col-6" style="background-color: #FFFFFF; border-radius: 5px;">
                                         <img src="<?php echo $custome_recaptcha->inline(); ?>" style="width: 100%; border-radius: 4px;"/>
                                     </div>
                                 </div>
                             @endif
-                            -->
                             
                             <button type="submit" class="btn btn-lg btn-block btn-primary">Sign in</button>
                             <div class="text-center">
@@ -193,7 +191,6 @@
                             <!-- End Checkbox -->
 
                             {{-- recaptcha --}}
-                            <!--
                             @php($recaptcha = \App\CentralLogics\Helpers::get_business_settings('recaptcha'))
                             @if(isset($recaptcha) && $recaptcha['status'] == 1)
                                 <div id="recaptcha_element2" style="width: 100%;" data-type="image"></div>
@@ -201,15 +198,15 @@
                             @else
                                 <div class="row p-2">
                                     <div class="col-6 pr-0">
-                                        <input type="text" class="form-control form-control-lg" name="custome_recaptcha"
-                                               id="custome_recaptcha" required placeholder="{{\__('Enter recaptcha value')}}" style="border: none" autocomplete="off">
+                                        <input type="text" class="form-control form-control-lg" name="custome_recaptcha2"
+                                               id="custome_recaptcha2" required placeholder="{{\__('Enter recaptcha value')}}" style="border: none" autocomplete="off" value="{{env('APP_DEBUG')?session('six_captcha'):''}}">
                                     </div>
                                     <div class="col-6" style="background-color: #FFFFFF; border-radius: 5px;">
                                         <img src="<?php echo $custome_recaptcha->inline(); ?>" style="width: 100%; border-radius: 4px;"/>
                                     </div>
                                 </div>
                             @endif
-                            -->
+
                             <button type="submit" class="btn btn-lg btn-block btn-primary">{{__('messages.sine_in')}}</button>
 
                             <div class="text-center">
@@ -311,7 +308,6 @@
 </script>
 
 {{-- recaptcha scripts start --}}
-<!--
 @if(isset($recaptcha) && $recaptcha['status'] == 1)
     <script type="text/javascript">
         var onloadCallback = function () {
@@ -349,7 +345,6 @@
         });
     </script>
 @endif
-    -->
 {{-- recaptcha scripts end --}}
 
 

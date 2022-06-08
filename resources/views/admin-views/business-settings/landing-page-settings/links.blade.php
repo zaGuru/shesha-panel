@@ -43,19 +43,38 @@
             <!-- Nav -->
             <ul class="nav nav-tabs page-header-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'index')}}">{{__('messages.text')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'index') }}">{{ __('messages.text') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('admin.business-settings.landing-page-settings', 'links')}}"  aria-disabled="true">{{__('messages.button_links')}}</a>
+                    <a class="nav-link active"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'links') }}"
+                        aria-disabled="true">{{ __('messages.button_links') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'speciality')}}"  aria-disabled="true">{{__('messages.speciality')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'speciality') }}"
+                        aria-disabled="true">{{ __('messages.speciality') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'testimonial')}}"  aria-disabled="true">{{__('messages.testimonial')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'testimonial') }}"
+                        aria-disabled="true">{{ __('messages.testimonial') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'image')}}"  aria-disabled="true">{{__('messages.image')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'feature') }}"
+                        aria-disabled="true">{{ __('messages.feature') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'image') }}"
+                        aria-disabled="true">{{ __('messages.image') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'backgroundChange') }}"
+                        aria-disabled="true">{{ __('messages.header_footer_bg') }}</a>
                 </li>
             </ul>
             <!-- End Nav -->
@@ -73,7 +92,7 @@
 
                 @csrf
                 <div class="row">
-                    <div class="col-6"> 
+                    <div class="col-6">
                         <div class="form-group p-2 border">
                             <label class="d-flex justify-content-between switch toggle-switch-sm text-dark" for="app_url_android_status">
                                 <span>{{__('messages.app_url')}} ({{__('messages.play_store')}}) <span class="input-label-secondary" title=""><img src="{{asset('/public/assets/admin/img/info-circle.svg')}}" alt=""></span></span>
@@ -85,7 +104,7 @@
                             <input type="text" id="app_url_android"  name="app_url_android" class="form-control" value="{{isset($landing_page_links)?$landing_page_links['app_url_android']:''}}">
                         </div>
                     </div>
-                    <div class="col-6"> 
+                    <div class="col-6">
                         <div class="form-group p-2 border">
                             <label class="d-flex justify-content-between switch toggle-switch-sm text-dark" for="app_url_ios_status">
                                 <span>{{__('messages.app_url')}} ({{__('messages.app_store')}}) <span class="input-label-secondary" title=""><img src="{{asset('/public/assets/admin/img/info-circle.svg')}}" alt=""></span></span>
@@ -97,7 +116,7 @@
                             <input type="text" id="app_url_ios" name="app_url_ios" class="form-control" value="{{isset($landing_page_links)?$landing_page_links['app_url_ios']:''}}">
                         </div>
                     </div>
-                    <div class="col-6"> 
+                    <div class="col-6">
                         <div class="form-group p-2 border">
                             <label class="d-flex justify-content-between switch toggle-switch-sm text-dark" for="web_app_url_status">
                                 <span>{{__('messages.web_app_url')}} <span class="input-label-secondary" title=""><img src="{{asset('/public/assets/admin/img/info-circle.svg')}}" alt=""></span></span>

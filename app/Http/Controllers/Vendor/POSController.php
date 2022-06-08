@@ -23,7 +23,7 @@ class POSController extends Controller
         $categories = Category::active()->get();
         $keyword = $request->query('keyword', false);
         $key = explode(' ', $keyword);
-        $products = Food::
+        $products = Food::active()->
         when($category, function($query)use($category){
             $query->whereHas('category',function($q)use($category){
                 return $q->whereId($category)->orWhere('parent_id', $category);
@@ -55,7 +55,7 @@ class POSController extends Controller
         $product = Food::findOrFail($request->product_id);
         $item_key = $request->item_key;
         $cart_item = session()->get('cart')[$item_key];
-        
+
         return response()->json([
             'success' => 1,
             'view' => view('vendor-views.pos._quick-view-cart-item', compact('product', 'cart_item', 'item_key'))->render(),
@@ -83,7 +83,7 @@ class POSController extends Controller
             foreach($request['addon_id'] as $id)
             {
                 $addon_price+= $request['addon-price'.$id]*$request['addon-quantity'.$id];
-            } 
+            }
         }
 
         if ($str != null) {
@@ -154,19 +154,19 @@ class POSController extends Controller
         $data['image'] = $product->image;
         $data['add_ons'] = [];
         $data['add_on_qtys'] = [];
-        
+
         if($request['addon_id'])
         {
             foreach($request['addon_id'] as $id)
             {
                 $addon_price+= $request['addon-price'.$id]*$request['addon-quantity'.$id];
                 $data['add_on_qtys'][]=$request['addon-quantity'.$id];
-            } 
+            }
             $data['add_ons'] = $request['addon_id'];
         }
 
         $data['addon_price'] = $addon_price;
-        
+
         if ($request->session()->has('cart')) {
             $cart = $request->session()->get('cart', collect([]));
             if(isset($request->cart_item_key))
@@ -230,7 +230,7 @@ class POSController extends Controller
     public function update_tax(Request $request)
     {
         $cart = $request->session()->get('cart', collect([]));
-        $cart['tax'] = $request->tax; 
+        $cart['tax'] = $request->tax;
         $request->session()->put('cart', $cart);
         return back();
     }
@@ -238,8 +238,8 @@ class POSController extends Controller
     public function update_discount(Request $request)
     {
         $cart = $request->session()->get('cart', collect([]));
-        $cart['discount'] = $request->discount; 
-        $cart['discount_type'] = $request->type; 
+        $cart['discount'] = $request->discount;
+        $cart['discount_type'] = $request->type;
         $request->session()->put('cart', $cart);
         return back();
     }
@@ -256,7 +256,7 @@ class POSController extends Controller
         })
         ->limit(8)
         ->get([DB::raw('id, CONCAT(f_name, " ", l_name, " (", phone ,")") as text')]);
-        
+
         $data[]=(object)['id'=>false, 'text'=>trans('messages.walk_in_customer')];
 
         return response()->json($data);
@@ -334,7 +334,7 @@ class POSController extends Controller
                 }
             }
         }
-        
+
 
         if(isset($cart['discount']))
         {
@@ -387,7 +387,7 @@ class POSController extends Controller
             }
         })->pos()->limit(100)->get();
         return response()->json([
-            'view'=>view('vendor-views.order.partials._table',compact('orders'))->render()
+            'view'=>view('vendor-views.pos.order.partials._table',compact('orders'))->render()
         ]);
     }
 

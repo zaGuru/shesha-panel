@@ -23,7 +23,7 @@ class OrderController extends Controller
     public function list($status)
     {
         Order::where(['checked' => 0])->where('restaurant_id',Helpers::get_restaurant_id())->update(['checked' => 1]);
-        
+
         $orders = Order::with(['customer'])
         ->when($status == 'searching_for_deliverymen', function($query){
             return $query->SearchingForDeliveryman();
@@ -82,7 +82,7 @@ class OrderController extends Controller
                 });
             });
         })
-        ->when(($status != 'scheduled' && $status != 'all'), function($query){
+        ->when(in_array($status, ['pending','confirmed']), function($query){
             return $query->OrderScheduledIn(30);
         })
         ->Notpos()
@@ -122,7 +122,7 @@ class OrderController extends Controller
             return back();
         }
     }
- 
+
     public function status(Request $request)
     {
         $request->validate([
@@ -197,7 +197,7 @@ class OrderController extends Controller
                 else{
                     $ol = OrderLogic::create_transaction($order,'admin', null);
                 }
-                
+
 
                 if(!$ol)
                 {
@@ -215,7 +215,7 @@ class OrderController extends Controller
                 }
             });
             $order->customer->increment('order_count');
-        } 
+        }
         if($request->order_status == 'canceled' || $request->order_status == 'delivered')
         {
             if($order->delivery_man)
@@ -223,8 +223,8 @@ class OrderController extends Controller
                 $dm = $order->delivery_man;
                 $dm->current_orders = $dm->current_orders>1?$dm->current_orders-1:0;
                 $dm->save();
-            }                 
-        }  
+            }
+        }
 
         if($request->order_status == 'delivered')
         {
@@ -233,10 +233,12 @@ class OrderController extends Controller
             {
                 $order->delivery_man->increment('order_count');
             }
-            
-        }
 
+        }
         $order->order_status = $request->order_status;
+        if ($request->order_status == "processing") {
+            $order->processing_time = $request->processing_time;
+        }
         $order[$request['order_status']] = now();
         $order->save();
         if(!Helpers::send_order_notification($order))
@@ -254,7 +256,7 @@ class OrderController extends Controller
             'contact_person_name' => 'required',
             'address_type' => 'required',
             'contact_person_number' => 'required',
-            'address' => 'required'
+            'address' => 'required',
         ]);
 
         $address = [
@@ -262,6 +264,9 @@ class OrderController extends Controller
             'contact_person_number' => $request->contact_person_number,
             'address_type' => $request->address_type,
             'address' => $request->address,
+            'floor' => $request->floor,
+            'road' => $request->road,
+            'house' => $request->house,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
             'created_at' => now(),

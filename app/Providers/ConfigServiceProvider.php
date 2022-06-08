@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\ServiceProvider;
 use Carbon\Carbon;
+use phpDocumentor\Reflection\Types\Boolean;
+
 Carbon::setWeekStartsAt(Carbon::MONDAY);
 Carbon::setWeekEndsAt(Carbon::SUNDAY);
 class ConfigServiceProvider extends ServiceProvider
@@ -35,6 +37,7 @@ class ConfigServiceProvider extends ServiceProvider
             $emailServices = json_decode($data['value'], true);
             if ($emailServices) {
                 $config = array(
+                    'status' => (Boolean)(isset($emailServices['status'])?$emailServices['status']:1),
                     'driver' => $emailServices['driver'],
                     'host' => $emailServices['host'],
                     'port' => $emailServices['port'],
@@ -152,7 +155,7 @@ class ConfigServiceProvider extends ServiceProvider
                 Config::set('default_pagination', 25);
             }
 
-            $round_up_to_digit = BusinessSetting::where(['key' => 'round_up_to_digit'])->first();
+            $round_up_to_digit = BusinessSetting::where(['key' => 'digit_after_decimal_point'])->first();
             if ($round_up_to_digit) {
                 Config::set('round_up_to_digit', $round_up_to_digit->value);
             } else {
@@ -204,6 +207,33 @@ class ConfigServiceProvider extends ServiceProvider
             }
             else{
                 Config::set('toggle_veg_non_veg', false);
+            }
+
+            //paytm
+            $paytm = BusinessSetting::where(['key' => 'paytm'])->first();
+            $paytm = isset($paytm)?json_decode($paytm->value, true):null;
+
+            if (isset($paytm)) {
+
+                $PAYTM_STATUS_QUERY_NEW_URL='https://securegw-stage.paytm.in/merchant-status/getTxnStatus';
+                $PAYTM_TXN_URL='https://securegw-stage.paytm.in/theia/processTransaction';
+                if ($mode == 'live') {
+                    $PAYTM_STATUS_QUERY_NEW_URL='https://securegw.paytm.in/merchant-status/getTxnStatus';
+                    $PAYTM_TXN_URL='https://securegw.paytm.in/theia/processTransaction';
+                }
+
+                $config = array(
+                    'PAYTM_ENVIRONMENT' => ($mode=='live')?'PROD':'TEST',
+                    'PAYTM_MERCHANT_KEY' => env('PAYTM_MERCHANT_KEY', $paytm['paytm_merchant_key']),
+                    'PAYTM_MERCHANT_MID' => env('PAYTM_MERCHANT_MID', $paytm['paytm_merchant_mid']),
+                    'PAYTM_MERCHANT_WEBSITE' => env('PAYTM_MERCHANT_WEBSITE', $paytm['paytm_merchant_website']),
+                    'PAYTM_REFUND_URL' => env('PAYTM_REFUND_URL', $paytm['paytm_refund_url']),
+                    'PAYTM_STATUS_QUERY_URL' => env('PAYTM_STATUS_QUERY_URL', $PAYTM_STATUS_QUERY_NEW_URL),
+                    'PAYTM_STATUS_QUERY_NEW_URL' => env('PAYTM_STATUS_QUERY_NEW_URL', $PAYTM_STATUS_QUERY_NEW_URL),
+                    'PAYTM_TXN_URL' => env('PAYTM_TXN_URL', $PAYTM_TXN_URL),
+                );
+
+                Config::set('config_paytm', $config);
             }
 
         } catch (\Exception $ex) {

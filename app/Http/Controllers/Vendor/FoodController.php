@@ -15,6 +15,7 @@ use App\CentralLogics\Helpers;
 use App\CentralLogics\ProductLogic;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Illuminate\Support\Facades\DB;
+use App\Models\Translation;
 
 class FoodController extends Controller
 {
@@ -41,16 +42,19 @@ class FoodController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:191',
+            'name' => 'array',
+            'name.0' => 'required',
+            'name.*' => 'max:191',
             'category_id' => 'required',
-            'image' => 'required',
+            //'image' => 'required',
             'price' => 'required|numeric|between:.01,999999999999.99',
-            'description' => 'max:1000',
+            'description.*' => 'max:1000',
             'discount' => 'required|numeric|min:0',
         ], [
-            'name.required' => trans('messages.item_name_required'),
+            'name.0.required' => trans('messages.item_name_required'),
             'category_id.required' => trans('messages.category_required'),
-            'veg.required'=>trans('messages.item_type_is_required')
+            'veg.required'=>trans('messages.item_type_is_required'),
+            'description.*.max' => trans('messages.description_length_warning'),
         ]);
 
         if ($request['discount_type'] == 'percent') {
@@ -68,7 +72,7 @@ class FoodController extends Controller
         }
 
         $food = new Food;
-        $food->name = $request->name;
+        $food->name = $request->name[array_search('en', $request->lang)];
 
         $category = [];
         if ($request->category_id != null) {
@@ -91,7 +95,7 @@ class FoodController extends Controller
         }
         $food->category_id = $request->sub_category_id?$request->sub_category_id:$request->category_id;
         $food->category_ids = json_encode($category);
-        $food->description = $request->description;
+        $food->description = $request->description[array_search('en', $request->lang)];
 
         $choice_options = [];
         if ($request->has('choice')) {
@@ -149,6 +153,31 @@ class FoodController extends Controller
         $food->restaurant_id = Helpers::get_restaurant_id();
         $food->save();
 
+        $data = [];
+        foreach ($request->lang as $index => $key) {
+            if ($request->name[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\Food',
+                    'translationable_id' => $food->id,
+                    'locale' => $key,
+                    'key' => 'name',
+                    'value' => $request->name[$index],
+                ));
+            }
+            if ($request->description[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\Food',
+                    'translationable_id' => $food->id,
+                    'locale' => $key,
+                    'key' => 'description',
+                    'value' => $request->description[$index],
+                ));
+            }
+        }
+
+
+        Translation::insert($data);
+
         return response()->json([], 200);
     }
 
@@ -167,7 +196,7 @@ class FoodController extends Controller
             return back();
         }
 
-        $product = Food::findOrFail($id);
+        $product = Food::withoutGlobalScope('translate')->findOrFail($id);
         $product_category = json_decode($product->category_ids);
         $categories = Category::where(['parent_id' => 0])->get();
         return view('vendor-views.product.edit', compact('product', 'product_category', 'categories'));
@@ -199,15 +228,18 @@ class FoodController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|max:191',
+            'name' => 'array',
+            'name.0' => 'required',
+            'name.*' => 'max:191',
             'category_id' => 'required',
             'price' => 'required|numeric|between:0.01,999999999999.99',
-            'description' => 'max:1000',
+            'description.*' => 'max:1000',
             'discount' => 'required|numeric|min:0',
         ], [
-            'name.required' => trans('messages.item_name_required'),
+            'name.0.required' => trans('messages.item_name_required'),
             'category_id.required' => trans('messages.category_required'),
-            'veg.required'=>trans('messages.item_type_is_required')
+            'veg.required'=>trans('messages.item_type_is_required'),
+            'description.*.max' => trans('messages.description_length_warning'),
         ]);
 
         if ($request['discount_type'] == 'percent') {
@@ -226,7 +258,7 @@ class FoodController extends Controller
 
         $p = Food::find($id);
 
-        $p->name = $request->name;
+        $p->name = $request->name[array_search('en', $request->lang)];
 
         $category = [];
         if ($request->category_id != null) {
@@ -250,7 +282,7 @@ class FoodController extends Controller
 
         $p->category_id = $request->sub_category_id?$request->sub_category_id:$request->category_id;
         $p->category_ids = json_encode($category);
-        $p->description = $request->description;
+        $p->description = $request->description[array_search('en', $request->lang)];
 
         $choice_options = [];
         if ($request->has('choice')) {
@@ -308,6 +340,26 @@ class FoodController extends Controller
 
         $p->save();
 
+        foreach ($request->lang as $index => $key) {
+            if ($request->name[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\Food',
+                        'translationable_id' => $p->id,
+                        'locale' => $key,
+                        'key' => 'name'],
+                    ['value' => $request->name[$index]]
+                );
+            }
+            if ($request->description[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\Food',
+                        'translationable_id' => $p->id,
+                        'locale' => $key,
+                        'key' => 'description'],
+                    ['value' => $request->description[$index]]
+                );
+            }
+        }
         return response()->json([], 200);
     }
 
@@ -389,7 +441,7 @@ class FoodController extends Controller
             });
         })
         ->type($type)->latest()->paginate(config('default_pagination'));
-        $category =$category_id !='all'? Category::findOrFail($category_id):null;   
+        $category =$category_id !='all'? Category::findOrFail($category_id):null;
         return view('vendor-views.product.list', compact('foods', 'category', 'type'));
     }
 

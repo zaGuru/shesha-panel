@@ -218,21 +218,25 @@
                     @foreach($reviews as $review)
                         <tr>
                             <td>
-                                <a class="d-flex align-items-center"
-                                   href="{{route('admin.customer.view',[$review['user_id']])}}">
-                                    <div class="avatar avatar-circle">
-                                        <img class="avatar-img" width="75" height="75"
-                                             onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                             src="{{asset('storage/app/public/profile/'.$review->customer->image)}}"
-                                             alt="Image Description">
-                                    </div>
-                                    <div class="ml-3">
-                                    <span class="d-block h5 text-hover-primary mb-0">{{$review->customer['f_name']." ".$review->customer['l_name']}} <i
-                                            class="tio-verified text-primary" data-toggle="tooltip" data-placement="top"
-                                            title="Verified Customer"></i></span>
-                                        <span class="d-block font-size-sm text-body">{{$review->customer->email}}</span>
-                                    </div>
-                                </a>
+                                @if ($review->customer)
+                                    <a class="d-flex align-items-center"
+                                    href="{{route('admin.customer.view',[$review['user_id']])}}">
+                                        <div class="avatar avatar-circle">
+                                            <img class="avatar-img" width="75" height="75"
+                                                onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
+                                                src="{{asset('storage/app/public/profile/'.$review->customer->image)}}"
+                                                alt="Image Description">
+                                        </div>
+                                        <div class="ml-3">
+                                        <span class="d-block h5 text-hover-primary mb-0">{{$review->customer['f_name']." ".$review->customer['l_name']}} <i
+                                                class="tio-verified text-primary" data-toggle="tooltip" data-placement="top"
+                                                title="Verified Customer"></i></span>
+                                            <span class="d-block font-size-sm text-body">{{$review->customer->email}}</span>
+                                        </div>
+                                    </a>
+                                @else
+                                {{__('messages.customer_not_found')}}
+                                @endif
                             </td>
                             <td>
                                 <div class="text-wrap" style="width: 18rem;">

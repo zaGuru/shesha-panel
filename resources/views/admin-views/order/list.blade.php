@@ -84,7 +84,7 @@
 
                                 <div id="usersExportDropdown"
                                      class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-sm-right">
-                                    <span class="dropdown-header">{{__('messages.options')}}</span>
+                                    {{--<span class="dropdown-header">{{__('messages.options')}}</span>
                                     <a id="export-copy" class="dropdown-item" href="javascript:;">
                                         <img class="avatar avatar-xss avatar-4by3 mr-2"
                                              src="{{asset('public/assets/admin')}}/svg/illustrations/copy.svg"
@@ -97,7 +97,7 @@
                                              alt="Image Description">
                                         {{__('messages.print')}}
                                     </a>
-                                    <div class="dropdown-divider"></div>
+                                    <div class="dropdown-divider"></div>--}}
                                     <span class="dropdown-header">{{__('messages.download')}} {{__('messages.options')}}</span>
                                     <a id="export-excel" class="dropdown-item" href="javascript:;">
                                         <img class="avatar avatar-xss avatar-4by3 mr-2"
@@ -111,12 +111,12 @@
                                              alt="Image Description">
                                         .{{__('messages.csv')}}
                                     </a>
-                                    <a id="export-pdf" class="dropdown-item" href="javascript:;">
+                                    {{--<a id="export-pdf" class="dropdown-item" href="javascript:;">
                                         <img class="avatar avatar-xss avatar-4by3 mr-2"
                                              src="{{asset('public/assets/admin')}}/svg/components/pdf.svg"
                                              alt="Image Description">
                                         {{__('messages.pdf')}}
-                                    </a>
+                                    </a>--}}
                                 </div>
                             </div>
                             <!-- End Unfold -->
@@ -307,7 +307,7 @@
 
                     <tbody id="set-rows">
                     @foreach($orders as $key=>$order)
-
+                        
                         <tr class="status-{{$order['order_status']}} class-all">
                             <td class="">
                                 {{$key+$orders->firstItem()}}
@@ -423,7 +423,7 @@
                     </a>
                     <!-- End Toggle Button -->
                 </div>
-                <?php 
+                <?php
                 $filter_count=0;
                 if(isset($zone_ids) && count($zone_ids) > 0) $filter_count += 1;
                 if(isset($vendor_ids) && count($vendor_ids)>0) $filter_count += 1;
@@ -435,7 +435,7 @@
 
                 if(isset($from_date) && isset($to_date)) $filter_count += 1;
                 if(isset($order_type)) $filter_count += 1;
-                
+
                 ?>
                 <!-- Body -->
                 <form class="card-body sidebar-body sidebar-scrollbar" action="{{route('admin.order.filter')}}" method="POST" id="order_filter_form">
@@ -615,26 +615,35 @@
             var datatable = $.HSCore.components.HSDatatables.init($('#datatable'), {
                 dom: 'Bfrtip',
                 buttons: [
-                    {
-                        extend: 'copy',
-                        className: 'd-none'
-                    },
+                    // {
+                    //     extend: 'copy',
+                    //     className: 'd-none'
+                    // },
                     {
                         extend: 'excel',
-                        className: 'd-none'
+                        className: 'd-none',
+                        action: function (e, dt, node, config)
+                        {
+                            window.location.href = '{{route("admin.order.export",['status'=>$status,'type'=>'excel'])}}';
+                        }
                     },
                     {
                         extend: 'csv',
-                        className: 'd-none'
+                        className: 'd-none',
+                        action: function (e, dt, node, config)
+                        {
+                            window.location.href = '{{route("admin.order.export",['status'=>$status,'type'=>'csv'])}}';
+                        }
                     },
-                    {
-                        extend: 'pdf',
-                        className: 'd-none'
-                    },
-                    {
-                        extend: 'print',
-                        className: 'd-none'
-                    },
+                    // {
+                    //     extend: 'pdf',
+                    //     className: 'd-none',
+
+                    // },
+                    // {
+                    //     extend: 'print',
+                    //     className: 'd-none'
+                    // },
                 ],
                 select: {
                     style: 'multi',
@@ -653,9 +662,9 @@
                 }
             });
 
-            $('#export-copy').click(function () {
-                datatable.button('.buttons-copy').trigger()
-            });
+            // $('#export-copy').click(function () {
+            //     datatable.button('.buttons-copy').trigger()
+            // });
 
             $('#export-excel').click(function () {
                 datatable.button('.buttons-excel').trigger()
@@ -665,13 +674,13 @@
                 datatable.button('.buttons-csv').trigger()
             });
 
-            $('#export-pdf').click(function () {
-                datatable.button('.buttons-pdf').trigger()
-            });
+            // $('#export-pdf').click(function () {
+            //     datatable.button('.buttons-pdf').trigger()
+            // });
 
-            $('#export-print').click(function () {
-                datatable.button('.buttons-print').trigger()
-            });
+            // $('#export-print').click(function () {
+            //     datatable.button('.buttons-print').trigger()
+            // });
 
             $('#datatableSearch').on('mouseup', function (e) {
                 var $input = $(this),

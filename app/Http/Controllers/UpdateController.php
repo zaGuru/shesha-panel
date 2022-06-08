@@ -22,7 +22,7 @@ class UpdateController extends Controller
         Helpers::setEnvironmentValue('BUYER_USERNAME',$request['username']);
         Helpers::setEnvironmentValue('PURCHASE_CODE',$request['purchase_key']);
         Helpers::setEnvironmentValue('APP_MODE','live');
-        Helpers::setEnvironmentValue('SOFTWARE_VERSION','5.2');
+        Helpers::setEnvironmentValue('SOFTWARE_VERSION','5.6.1');
         Helpers::setEnvironmentValue('APP_NAME','stackfood'.time());
 
         $data = Helpers::requestSender();
@@ -55,7 +55,7 @@ class UpdateController extends Controller
             'secret_key'     => '',
             'hash'    => '',
         ]));
-        
+
         Helpers::insert_business_settings_key('mercadopago',
         json_encode([
             'status'        => 1,
@@ -69,7 +69,7 @@ class UpdateController extends Controller
         Helpers::insert_business_settings_key('testimonial','[{"img":"img-1.png","name":"Barry Allen","position":"Web Designer","detail":"Lorem ipsum dolor sit amet, consectetur adipisicing elit. A\r\n                    aliquam amet animi blanditiis consequatur debitis dicta\r\n                    distinctio, enim error eum iste libero modi nam natus\r\n                    perferendis possimus quasi sint sit tempora voluptatem. Est,\r\n                    exercitationem id ipsa ipsum laboriosam perferendis temporibus!"},{"img":"img-2.png","name":"Sophia Martino","position":"Web Designer","detail":"Lorem ipsum dolor sit amet, consectetur adipisicing elit. A aliquam amet animi blanditiis consequatur debitis dicta distinctio, enim error eum iste libero modi nam natus perferendis possimus quasi sint sit tempora voluptatem. Est, exercitationem id ipsa ipsum laboriosam perferendis temporibus!"},{"img":"img-3.png","name":"Alan Turing","position":"Web Designer","detail":"Lorem ipsum dolor sit amet, consectetur adipisicing elit. A aliquam amet animi blanditiis consequatur debitis dicta distinctio, enim error eum iste libero modi nam natus perferendis possimus quasi sint sit tempora voluptatem. Est, exercitationem id ipsa ipsum laboriosam perferendis temporibus!"},{"img":"img-4.png","name":"Ann Marie","position":"Web Designer","detail":"Lorem ipsum dolor sit amet, consectetur adipisicing elit. A aliquam amet animi blanditiis consequatur debitis dicta distinctio, enim error eum iste libero modi nam natus perferendis possimus quasi sint sit tempora voluptatem. Est, exercitationem id ipsa ipsum laboriosam perferendis temporibus!"}]');
         Helpers::insert_business_settings_key('landing_page_images','{"top_content_image":"double_screen_image.png","about_us_image":"about_us_image.png"}');
         Helpers::insert_business_settings_key('paymob_accept','{"status":"0","api_key":null,"iframe_id":null,"integration_id":null,"hmac":null}');
-        
+
         //Version 5.0
         Helpers::insert_business_settings_key('show_dm_earning',0);
         Helpers::insert_business_settings_key('canceled_by_deliveryman',0);
@@ -81,7 +81,22 @@ class UpdateController extends Controller
         Helpers::insert_business_settings_key('toggle_dm_registration', 0);
         Helpers::insert_business_settings_key('toggle_restaurant_registration', 0);
         Helpers::insert_business_settings_key('recaptcha', '{"status":"0","site_key":null,"secret_key":null}');
+        Helpers::insert_business_settings_key('schedule_order_slot_duration', 30);
+        Helpers::insert_business_settings_key('digit_after_decimal_point', 2);
+        Helpers::insert_business_settings_key('language', '["en"]');
+        Helpers::insert_business_settings_key('icon', 'icon.png');
 
+        Helpers::insert_business_settings_key('wallet_status', '0');
+        Helpers::insert_business_settings_key('loyalty_point_minimum_point', '0');
+        Helpers::insert_business_settings_key('loyalty_point_status', '0');
+        Helpers::insert_business_settings_key('loyalty_point_item_purchase_point', '0');
+        Helpers::insert_business_settings_key('loyalty_point_exchange_rate', '0');
+        Helpers::insert_business_settings_key('wallet_add_refund', '0');
+        Helpers::insert_business_settings_key('order_refunded_message', 'Order refunded successfully');
+        Helpers::insert_business_settings_key('ref_earning_status', '0');
+        Helpers::insert_business_settings_key('ref_earning_exchange_rate', '0');
+        Helpers::insert_business_settings_key('dm_tips_status', '0');
+        Helpers::insert_business_settings_key('theme', '1');
         ProductLogic::update_food_ratings();
         return redirect('/admin/auth/login');
     }

@@ -11,7 +11,7 @@ class BannerLogic
 {
     public static function get_banners($zone_id)
     {
-        $banners = Banner::active()->where('zone_id', $zone_id)->get();
+        $banners = Banner::active()->whereIn('zone_id', $zone_id)->get();
         $data = [];
         foreach($banners as $banner)
         {
@@ -36,7 +36,7 @@ class BannerLogic
                     'type'=>$banner->type,
                     'image'=>$banner->image,
                     'restaurant'=> null,
-                    'food'=> $food?Helpers::product_data_formatting($food, false):null,
+                    'food'=> $food?Helpers::product_data_formatting($food, false, false, app()->getLocale()):null,
                 ];
             }
         }

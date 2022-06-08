@@ -43,19 +43,38 @@
             <!-- Nav -->
             <ul class="nav nav-tabs page-header-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'index')}}">{{__('messages.text')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'index') }}">{{ __('messages.text') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'links')}}"  aria-disabled="true">{{__('messages.button_links')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'links') }}"
+                        aria-disabled="true">{{ __('messages.button_links') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'speciality')}}"  aria-disabled="true">{{__('messages.speciality')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'speciality') }}"
+                        aria-disabled="true">{{ __('messages.speciality') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'testimonial')}}"  aria-disabled="true">{{__('messages.testimonial')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'testimonial') }}"
+                        aria-disabled="true">{{ __('messages.testimonial') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('admin.business-settings.landing-page-settings', 'image')}}"  aria-disabled="true">{{__('messages.image')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'feature') }}"
+                        aria-disabled="true">{{ __('messages.feature') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'image') }}"
+                        aria-disabled="true">{{ __('messages.image') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'backgroundChange') }}"
+                        aria-disabled="true">{{ __('messages.header_footer_bg') }}</a>
                 </li>
             </ul>
             <!-- End Nav -->
@@ -67,46 +86,92 @@
 
     <div class="card my-2">
         <div class="card-body">
-            <form action="{{route('admin.business-settings.landing-page-settings', 'image')}}" method="POST" enctype="multipart/form-data">
             @php($landing_page_images = \App\Models\BusinessSetting::where(['key'=>'landing_page_images'])->first())
             @php($landing_page_images = isset($landing_page_images->value)?json_decode($landing_page_images->value, true):null)
 
+            <form action="{{route('admin.business-settings.landing-page-settings', 'image')}}" method="POST" enctype="multipart/form-data">
                 @csrf
-
                 <div class="form-group">
                     <label class="input-label" >{{__('messages.top_content_image')}}<small style="color: red">* ( {{__('messages.size')}}: 772 X 899 px )</small></label>
                     <div class="custom-file">
                         <input type="file" name="top_content_image" id="customFileEg1" class="custom-file-input"
-                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" required>
+                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" >
                         <label class="custom-file-label" for="customFileEg1">{{__('messages.choose')}} {{__('messages.file')}}</label>
                     </div>
 
                     <center id="image-viewer-section" class="pt-2">
                         <img style="height: 200px;border: 1px solid; border-radius: 10px;" id="viewer"
-                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images)?$landing_page_images['top_content_image']:'double_screen_image.png'}}" 
+                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images['top_content_image'])?$landing_page_images['top_content_image']:'double_screen_image.png'}}"
                                 onerror="this.src='{{asset('public/assets/admin/img/400x400/img2.jpg')}}'"
                                 alt=""/>
                     </center>
                 </div>
-
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-success" value="{{__('messages.upload')}}">
+                </div>
+            </form>
+            <form action="{{route('admin.business-settings.landing-page-settings', 'image')}}" method="POST" enctype="multipart/form-data">
+                @csrf
                 <div class="form-group">
                     <label class="input-label" >{{__('messages.about_us_image')}}<small style="color: red">* ( {{__('messages.size')}}: 1241 X 1755 px )</small></label>
                     <div class="custom-file">
                         <input type="file" name="about_us_image" id="customFileEg2" class="custom-file-input"
-                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" required>
+                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" >
                         <label class="custom-file-label" for="customFileEg2">{{__('messages.choose')}} {{__('messages.file')}}</label>
                     </div>
 
                     <center id="image-viewer-section2" class="pt-2">
                         <img style="height: 200px;border: 1px solid; border-radius: 10px;" id="viewer2"
-                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images)?$landing_page_images['about_us_image']:'about_us_image.png'}}"
+                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images['about_us_image'])?$landing_page_images['about_us_image']:'about_us_image.png'}}"
+                                onerror="this.src='{{asset('public/assets/admin/img/400x400/img2.jpg')}}'"
+                                alt=""/>
+                    </center>
+                </div>
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-success" value="{{__('messages.upload')}}">
+                </div>
+            </form>
+            <form action="{{route('admin.business-settings.landing-page-settings', 'image')}}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="form-group">
+                    <label class="input-label" >{{__('messages.feature_section_image')}}<small style="color: red">* ( {{__('messages.size')}}: 1241 X 1755 px )</small></label>
+                    <div class="custom-file">
+                        <input type="file" name="feature_section_image" id="customFileEg3" class="custom-file-input"
+                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" >
+                        <label class="custom-file-label" for="customFileEg3">{{__('messages.choose')}} {{__('messages.file')}}</label>
+                    </div>
+
+                    <center id="image-viewer-section3" class="pt-2">
+                        <img style="height: 200px;border: 1px solid; border-radius: 10px;" id="viewer3"
+                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images['feature_section_image'])?$landing_page_images['feature_section_image']:'feature_section_image.png'}}"
+                                onerror="this.src='{{asset('public/assets/admin/img/400x400/img2.jpg')}}'"
+                                alt=""/>
+                    </center>
+                </div>
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-success" value="{{__('messages.upload')}}">
+                </div>
+            </form>
+            <form action="{{route('admin.business-settings.landing-page-settings', 'image')}}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                <div class="form-group">
+                    <label class="input-label" >{{__('messages.mobile_app_section_image')}}<small style="color: red">* ( {{__('messages.size')}}: 1241 X 1755 px )</small></label>
+                    <div class="custom-file">
+                        <input type="file" name="mobile_app_section_image" id="customFileEg4" class="custom-file-input"
+                                accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" >
+                        <label class="custom-file-label" for="customFileEg4">{{__('messages.choose')}} {{__('messages.file')}}</label>
+                    </div>
+
+                    <center id="image-viewer-section4" class="pt-2">
+                        <img style="height: 200px;border: 1px solid; border-radius: 10px;" id="viewer4"
+                                src="{{asset('public/assets/landing')}}/image/{{isset($landing_page_images['mobile_app_section_image'])?$landing_page_images['mobile_app_section_image']:'our_app_image.png.png'}}"
                                 onerror="this.src='{{asset('public/assets/admin/img/400x400/img2.jpg')}}'"
                                 alt=""/>
                     </center>
                 </div>
 
-                <div class="form-group">
-                    <input type="submit" class="btn btn-success" value="{{__('messages.submit')}}">
+                <div class="form-group text-center">
+                    <input type="submit" class="btn btn-success" value="{{__('messages.upload')}}">
                 </div>
             </form>
         </div>
@@ -137,6 +202,16 @@
         $("#customFileEg2").change(function () {
             readURL(this ,'viewer2');
             $('#image-viewer-section2').show(1000);
+        });
+
+        $("#customFileEg3").change(function () {
+            readURL(this ,'viewer3');
+            $('#image-viewer-section3').show(1000);
+        });
+
+        $("#customFileEg4").change(function () {
+            readURL(this ,'viewer4');
+            $('#image-viewer-section4').show(1000);
         });
 
     </script>

@@ -166,6 +166,8 @@ Route::group(['namespace' => 'Vendor', 'as' => 'vendor.'], function () {
 
         Route::group(['prefix' => 'business-settings', 'as' => 'business-settings.', 'middleware' => ['module:restaurant_setup']], function () {
             Route::get('restaurant-setup', 'BusinessSettingsController@restaurant_index')->name('restaurant-setup');
+            Route::post('add-schedule', 'BusinessSettingsController@add_schedule')->name('add-schedule');
+            Route::get('remove-schedule/{restaurant_schedule}', 'BusinessSettingsController@remove_schedule')->name('remove-schedule');
             Route::get('update-active-status', 'BusinessSettingsController@active_status')->name('update-active-status');
             Route::post('update-setup/{restaurant}', 'BusinessSettingsController@restaurant_setup')->name('update-setup');
             Route::get('toggle-settings-status/{restaurant}/{status}/{menu}', 'BusinessSettingsController@restaurant_status')->name('toggle-settings');

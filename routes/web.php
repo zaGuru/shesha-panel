@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,7 +17,7 @@ Route::get('terms-and-conditions', 'HomeController@terms_and_conditions')->name(
 Route::get('about-us', 'HomeController@about_us')->name('about-us');
 Route::get('contact-us', 'HomeController@contact_us')->name('contact-us');
 Route::get('privacy-policy', 'HomeController@privacy_policy')->name('privacy-policy');
-
+Route::post('newsletter/subscribe', 'NewsletterController@newsLetterSubscribe')->name('newsletter.subscribe');
 Route::get('authentication-failed', function () {
     $errors = [];
     array_push($errors, ['code' => 'auth-001', 'message' => 'Unauthenticated.']);
@@ -33,8 +32,7 @@ Route::group(['prefix' => 'payment-mobile'], function () {
 });
 
 // SSLCOMMERZ Start
-/*Route::get('/example1', 'SslCommerzPaymentController@exampleEasyCheckout');
-Route::get('/example2', 'SslCommerzPaymentController@exampleHostedCheckout');*/
+
 Route::post('pay-ssl', 'SslCommerzPaymentController@index');
 Route::post('/success', 'SslCommerzPaymentController@success');
 Route::post('/fail', 'SslCommerzPaymentController@fail');
@@ -48,9 +46,6 @@ Route::post('pay-paypal', 'PaypalPaymentController@payWithpaypal')->name('pay-pa
 Route::get('paypal-status', 'PaypalPaymentController@getPaymentStatus')->name('paypal-status');
 /*paypal*/
 
-/*Route::get('stripe', function (){
-return view('stripe-test');
-});*/
 
 Route::get('pay-stripe', 'StripePaymentController@payment_process_3d')->name('pay-stripe');
 Route::get('pay-stripe/success', 'StripePaymentController@success')->name('pay-stripe.success');
@@ -58,7 +53,7 @@ Route::get('pay-stripe/fail', 'StripePaymentController@fail')->name('pay-stripe.
 
 // Get Route For Show Payment Form
 Route::get('paywithrazorpay', 'RazorPayController@payWithRazorpay')->name('paywithrazorpay');
-Route::post('payment-razor', 'RazorPayController@payment')->name('payment-razor');
+Route::post('payment-razor/{order_id}', 'RazorPayController@payment')->name('payment-razor');
 
 /*Route::fallback(function () {
 return redirect('/admin/auth/login');
@@ -93,10 +88,32 @@ Route::get('mercadopago/home', 'MercadoPagoController@index')->name('mercadopago
 Route::post('mercadopago/make-payment', 'MercadoPagoController@make_payment')->name('mercadopago.make_payment');
 Route::get('mercadopago/get-user', 'MercadoPagoController@get_test_user')->name('mercadopago.get-user');
 
+//paytabs
+Route::any('/paytabs-payment', 'PaytabsController@payment')->name('paytabs-payment');
+Route::any('/paytabs-response', 'PaytabsController@callback_response')->name('paytabs-response');
 
+//bkash
+Route::group(['prefix'=>'bkash'], function () {
+    // Payment Routes for bKash
+    Route::post('get-token', 'BkashPaymentController@getToken')->name('bkash-get-token');
+    Route::post('create-payment', 'BkashPaymentController@createPayment')->name('bkash-create-payment');
+    Route::post('execute-payment', 'BkashPaymentController@executePayment')->name('bkash-execute-payment');
+    Route::get('query-payment', 'BkashPaymentController@queryPayment')->name('bkash-query-payment');
+    Route::post('success', 'BkashPaymentController@bkashSuccess')->name('bkash-success');
+
+});
+
+// The callback url after a payment PAYTM
+Route::get('paytm-payment', 'PaytmController@payment')->name('paytm-payment');
+Route::any('paytm-response', 'PaytmController@callback')->name('paytm-response');
+
+// The callback url after a payment LIQPAY
+Route::get('liqpay-payment', 'LiqPayController@payment')->name('liqpay-payment');
+Route::any('liqpay-callback', 'LiqPayController@callback')->name('liqpay-callback');
+
+Route::get('wallet-payment','WalletPaymentController@make_payment')->name('wallet.payment');
 
 Route::get('/test',function (){
-    // dd(\App\CentralLogics\Helpers::get_view_keys());
     dd('Hello tester');
 });
 
@@ -111,7 +128,6 @@ Route::get('authentication-failed', function () {
 Route::get('module-test',function (){
 
 });
-
 
 //Restaurant Registration
 Route::group(['prefix' => 'restaurant', 'as' => 'restaurant.'], function () {

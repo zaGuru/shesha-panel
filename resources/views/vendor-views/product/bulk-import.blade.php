@@ -36,6 +36,8 @@
                     <p> 5. You can get category id from their list, please input the right ids.</p>
 
                     <p> 6. Don't forget to fill all the fields </p>
+
+                    <p>7. For veg food enter '1' and for non-veg enter '0' on veg field.</p>
                     
                 </div>
             </div>
