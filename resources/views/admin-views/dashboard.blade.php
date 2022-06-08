@@ -220,7 +220,7 @@
                 labels: [
                     '{{__('messages.customer')}}',
                     '{{__('messages.restaurant')}}',
-                    '{{__('messages.Delivery Man')}}'
+                    '{{ translate('messages.delivery_man')}}'
                 ],
                 datasets: [{
                     label: 'User',

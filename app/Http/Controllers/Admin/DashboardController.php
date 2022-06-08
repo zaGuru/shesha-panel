@@ -3,16 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CustomerAddress;
 use App\Models\DeliveryMan;
 use App\Models\Food;
 use App\Models\Order;
-use App\Models\OrderDetail;
 use App\Models\Restaurant;
-use App\Models\Review;
 use App\Models\User;
 use App\Models\Wishlist;
-use App\Models\Zone;
 use App\Models\OrderTransaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -256,22 +252,18 @@ class DashboardController extends Controller
         $total_sell = [];
         $commission = [];
         for ($i = 1; $i <= 12; $i++) {
-            $from = date('Y-' . $i . '-01');
-            $to = date('Y-' . $i . '-30');
             $total_sell[$i] = OrderTransaction::NotRefunded()
                 ->when(is_numeric($params['zone_id']), function($q)use($params){
-                    return $q->whereHas('order.restaurant', function($query)use($params){
-                        return $query->where('zone_id', $params['zone_id']);
-                    });
+                    return $q->where('zone_id', $params['zone_id']);
                 })
-                ->whereBetween('created_at', [$from, $to])->sum('order_amount');
+                ->whereMonth('created_at', $i)->whereYear('created_at', now()->format('Y'))
+                ->sum('order_amount');
             $commission[$i] = OrderTransaction::NotRefunded()
                 ->when(is_numeric($params['zone_id']), function($q)use($params){
-                    return $q->whereHas('order.restaurant', function($query)use($params){
-                        return $query->where('zone_id', $params['zone_id']);
-                    });
+                    return $q->where('zone_id', $params['zone_id']);
                 })
-                ->whereBetween('created_at', [$from, $to])->sum('admin_commission');
+                ->whereMonth('created_at', $i)->whereYear('created_at', now()->format('Y'))
+                ->sum('admin_commission');
         }
 
         $dash_data = array_merge($data_os, $data_uo);

@@ -66,7 +66,7 @@
                                         {{ __('messages.type') }}</label>
                                     <select name="earning" class="form-control">
                                         <option value="1">{{ __('messages.freelancer') }}</option>
-                                        
+                                        <option value="0">{{ __('messages.salary_based') }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -103,8 +103,9 @@
                                         <option value="passport">{{ __('messages.passport') }}</option>
                                         <option value="driving_license">{{ __('messages.driving') }}
                                             {{ __('messages.license') }}</option>
-                                        <option value="ID">{{ __('messages.nid') }}</option>
-                                        
+                                        <option value="nid">{{ __('messages.nid') }}</option>
+                                        <option value="restaurant_id">{{ __('messages.restaurant') }}
+                                            {{ __('messages.id') }}</option>
                                     </select>
                                 </div>
                             </div>

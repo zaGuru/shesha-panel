@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Scopes\ZoneScope;
+use Illuminate\Database\Eloquent\Builder;
 
 class ItemCampaign extends Model
 {
@@ -22,6 +23,11 @@ class ItemCampaign extends Model
         'veg' => 'integer',
     ];
 
+    public function translations()
+    {
+        return $this->morphMany(Translation::class, 'translationable');
+    }
+    
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
@@ -45,5 +51,10 @@ class ItemCampaign extends Model
     protected static function booted()
     {
         static::addGlobalScope(new ZoneScope);
+        static::addGlobalScope('translate', function (Builder $builder) {
+            $builder->with(['translations' => function ($query) {
+                return $query->where('locale', app()->getLocale());
+            }]);
+        });
     }
 }

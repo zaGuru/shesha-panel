@@ -66,8 +66,8 @@
                 </div>
 
                 @php
-                    $from = session('from_date');
-                    $to = session('to_date');
+                    $from = session('from_date').' 00:00:00';
+                    $to = session('to_date').' 23:59:59';
                     $total=\App\Models\Order::when(isset($zone), function($query)use($zone){
                         return $query->whereHas('restaurant', function($q)use($zone){
                             return $q->where('zone_id', $zone->id);

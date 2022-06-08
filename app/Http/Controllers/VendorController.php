@@ -11,6 +11,7 @@ use App\CentralLogics\Helpers;
 use Illuminate\Support\Facades\Validator;
 use Brian2694\Toastr\Facades\Toastr;
 use App\Models\BusinessSetting;
+use Illuminate\Support\Facades\Mail;
 
 class VendorController extends Controller
 {
@@ -39,7 +40,7 @@ class VendorController extends Controller
             'address' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
-            'email' => 'required|unique:vendors',
+            'email' => 'required|email|unique:vendors',
             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:10|unique:vendors',
             'minimum_delivery_time' => 'required|regex:/^([0-9]{2})$/|min:2|max:2',
             'maximum_delivery_time' => 'required|regex:/^([0-9]{2})$/|min:2|max:2',
@@ -88,6 +89,16 @@ class VendorController extends Controller
         $restaurant->delivery_time = $request->minimum_delivery_time .'-'. $request->maximum_delivery_time;
         $restaurant->status = 0;
         $restaurant->save();
+
+        try{
+            if(config('mail.status')){
+                Mail::to($request['email'])->send(new \App\Mail\SelfRegistration('pending', $vendor->f_name.' '.$vendor->l_name));
+            }
+        }catch(\Exception $ex){
+            info($ex);
+        }
+        
+
         Toastr::success(trans('messages.application_placed_successfully'));
         return back();
     }

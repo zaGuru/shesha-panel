@@ -82,24 +82,28 @@
                 </div>
             </div>
         </div>
-        @if($wr->vendor->restaurants)
-            <div class="col-md-4">
-                <div class="card" style="min-height: 260px;">
-                    <div class="card-header">
-                        <h3 class="h3 mb-0">{{trans('messages.restaurant')}} {{trans('messages.info')}}</h3>
-                        <i class="tio tio-shop-outlined"></i>
-                    </div>
-                    <div class="card-body">
-                        <h5>{{trans('messages.restaurant')}} : {{$wr->vendor->restaurants[0]->name}}</h5>
-                        <h5>{{trans('messages.phone')}} : {{$wr->vendor->restaurants[0]->contact}}</h5>
-                        <h5>{{trans('messages.address')}} : {{$wr->vendor->restaurants[0]->address}}</h5>
-                        <h5 class="text-capitalize badge badge-success">{{trans('messages.balance')}}
-                            : {{$wr->vendor->wallet->balance}}
-                        </h5>
-                    </div>
+        
+        <div class="col-md-4">
+            <div class="card" style="min-height: 260px;">
+                <div class="card-header">
+                    <h3 class="h3 mb-0">{{trans('messages.restaurant')}} {{trans('messages.info')}}</h3>
+                    <i class="tio tio-shop-outlined"></i>
+                </div>
+                <div class="card-body">
+                    @if(isset($wr->vendor->restaurants[0]))
+                    <h5>{{trans('messages.restaurant')}} : {{$wr->vendor->restaurants[0]->name}}</h5>
+                    <h5>{{trans('messages.phone')}} : {{$wr->vendor->restaurants[0]->contact}}</h5>
+                    <h5>{{trans('messages.address')}} : {{$wr->vendor->restaurants[0]->address}}</h5>
+                    <h5 class="text-capitalize badge badge-success">{{trans('messages.balance')}}
+                        : {{$wr->vendor->wallet->balance}}
+                    </h5>
+                    @else
+                    <center>{{__('messages.Restaurant deleted!')}}</center>
+                    @endif
                 </div>
             </div>
-        @endif
+        </div>
+        
         <div class="col-md-4">
             <div class="card" style="min-height: 260px;">
                 <div class="card-header">

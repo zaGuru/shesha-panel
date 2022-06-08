@@ -28,6 +28,7 @@ class AttributeController extends Controller
         $attribute = new Attribute;
         $attribute->name = $request->name;
         $attribute->save();
+
         Toastr::success(trans('messages.attribute_added_successfully'));
         return back();
     }

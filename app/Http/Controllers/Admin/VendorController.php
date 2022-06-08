@@ -5,30 +5,29 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Vendor;
-use App\Models\Admin;
-use App\Models\Discount;
 use App\Models\Restaurant;
 use App\Models\Zone;
 use App\Models\AddOn;
 use App\Models\WithdrawRequest;
 use App\Models\RestaurantWallet;
-use App\Models\AdminWallet;
-use App\Models\AccountTransaction;
+use App\Models\RestaurantSchedule;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\CentralLogics\Helpers;
 use App\CentralLogics\RestaurantLogic;
 use Rap2hpoutre\FastExcel\FastExcel;
+use App\Scopes\RestaurantScope;
+use Illuminate\Support\Facades\Mail;
 
 
 class VendorController extends Controller
 {
     public function index()
     {
+        
         return view('admin-views.vendor.index');
     }
 
@@ -58,7 +57,7 @@ class VendorController extends Controller
             $point = new Point($request->latitude, $request->longitude);
             $zone = Zone::contains('coordinates', $point)->where('id', $request->zone_id)->first();
             if(!$zone){
-                $validator->getMessageBag()->add('latitude', 'Coordinates out of zone!');
+                $validator->getMessageBag()->add('latitude', trans('messages.coordinates_out_of_zone'));
                 return back()->withErrors($validator)
                         ->withInput();
             }
@@ -320,7 +319,7 @@ class VendorController extends Controller
         Toastr::success(trans('messages.restaurant').trans('messages.status_updated'));
         return back();
     }
-    
+
     public function restaurant_status(Restaurant $restaurant, Request $request)
     {
         if($request->menu == "schedule_order" && !Helpers::schedule_order())
@@ -373,8 +372,6 @@ class VendorController extends Controller
     {
         $request->validate([
             'minimum_order'=>'required',
-            'opening_time'=>'required',
-            'closeing_time'=>'required',
             'comission'=>'required',
             'tax'=>'required',
             'minimum_delivery_time' => 'required|regex:/^([0-9]{2})$/|min:2|max:2',
@@ -407,6 +404,15 @@ class VendorController extends Controller
         $restaurant->vendor->save();
         if($request->status) $restaurant->status = 1;
         $restaurant->save();
+
+        try{
+            if ( config('mail.status') ) {
+                Mail::to($request['email'])->send(new \App\Mail\SelfRegistration($request->status==1?'approved':'denied', $restaurant->vendor->f_name.' '.$restaurant->vendor->l_name));
+            }
+        }catch(\Exception $ex){
+            info($ex);
+        }
+        
 
         Toastr::success(trans('messages.application_status_updated_successfully'));
         return back();
@@ -480,7 +486,7 @@ class VendorController extends Controller
 
     public function get_addons(Request $request)
     {
-        $cat = AddOn::where(['restaurant_id' => $request->restaurant_id])->active()->get();
+        $cat = AddOn::withoutGlobalScope(RestaurantScope::class)->withoutGlobalScope('translate')->where(['restaurant_id' => $request->restaurant_id])->active()->get();
         $res = '';
         foreach ($cat as $row) {
             $res .= '<option value="' . $row->id.'"';
@@ -542,7 +548,7 @@ class VendorController extends Controller
         }
         $duplicate_phones = $collections->duplicates('phone');
         $duplicate_emails = $collections->duplicates('email');
-        
+
         // dd(['Phone'=>$duplicate_phones, 'Email'=>$duplicate_emails]);
         if($duplicate_emails->isNotEmpty())
         {
@@ -561,7 +567,7 @@ class VendorController extends Controller
         $vendor = Vendor::orderBy('id', 'desc')->first('id');
         $vendor_id = $vendor?$vendor->id:0;
         foreach ($collections as $key=>$collection) {
-                if ($collection['ownerFirstName'] === "" || $collection['restaurantName'] === "" || $collection['phone'] === "" || $collection['email'] === "" || $collection['latitude'] === "" || $collection['longitude'] === "" || empty($collection['openingTime']) === "" || empty($collection['closeingTime']) || $collection['zone_id'] === "") {
+                if ($collection['ownerFirstName'] === "" || $collection['restaurantName'] === "" || $collection['phone'] === "" || $collection['email'] === "" || $collection['latitude'] === "" || $collection['longitude'] === "" || $collection['zone_id'] === "") {
                     Toastr::error(trans('messages.please_fill_all_required_fields'));
                     return back();
                 }
@@ -584,8 +590,6 @@ class VendorController extends Controller
                 'email' => $collection['email'],
                 'latitude' => $collection['latitude'],
                 'longitude' => $collection['longitude'],
-                'opening_time' => $collection['openingTime'],
-                'closeing_time' => $collection['closeingTime'],
                 'vendor_id' => $vendor_id+$key+1,
                 'zone_id' => $collection['zone_id'],
                 'created_at'=>now(),
@@ -632,5 +636,58 @@ class VendorController extends Controller
         })
         ->get();
         return (new FastExcel(RestaurantLogic::format_export_restaurants($vendors)))->download('Restaurants.xlsx');
+    }
+
+    public function add_schedule(Request $request)
+    {
+        $validator = Validator::make($request->all(),[
+            'start_time'=>'required|date_format:H:i',
+            'end_time'=>'required|date_format:H:i|after:start_time',
+            'restaurant_id'=>'required',
+        ],[
+            'end_time.after'=>trans('messages.End time must be after the start time')
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)]);
+        }
+
+        $temp = RestaurantSchedule::where('day', $request->day)->where('restaurant_id',$request->restaurant_id)
+        ->where(function($q)use($request){
+            return $q->where(function($query)use($request){
+                return $query->where('opening_time', '<=' , $request->start_time)->where('closing_time', '>=', $request->start_time);
+            })->orWhere(function($query)use($request){
+                return $query->where('opening_time', '<=' , $request->end_time)->where('closing_time', '>=', $request->end_time);
+            });
+        })
+        ->first();
+
+        if(isset($temp))
+        {
+            return response()->json(['errors' => [
+                ['code'=>'time', 'message'=>trans('messages.schedule_overlapping_warning')]
+            ]]);
+        }
+
+        $restaurant = Restaurant::find($request->restaurant_id);
+        $restaurant_schedule = RestaurantSchedule::insert(['restaurant_id'=>$request->restaurant_id,'day'=>$request->day,'opening_time'=>$request->start_time,'closing_time'=>$request->end_time]);
+
+        return response()->json([
+            'view' => view('admin-views.vendor.view.partials._schedule', compact('restaurant'))->render(),
+        ]);
+    }
+
+    public function remove_schedule($restaurant_schedule)
+    {
+        $schedule = RestaurantSchedule::find($restaurant_schedule);
+        if(!$schedule)
+        {
+            return response()->json([],404);
+        }
+        $restaurant = $schedule->restaurant;
+        $schedule->delete();
+        return response()->json([
+            'view' => view('admin-views.vendor.view.partials._schedule', compact('restaurant'))->render(),
+        ]);
     }
 }

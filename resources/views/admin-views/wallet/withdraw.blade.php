@@ -66,9 +66,9 @@
                                         <td>{{$wr['amount']}}</td>
                                         {{-- <td>{{$wr->__action_note}}</td> --}}
                                         <td>
-                                            @if($wr->vendor)
+                                            @if($wr->vendor && isset($wr->vendor->restaurants[0]))
                                             <a class="deco-none"
-                                               href="{{route('admin.vendor.view',[$wr->vendor['id']])}}">{{ Str::limit($wr->vendor->restaurants[0]->name, 20, '...') }}</a>
+                                               href="{{route('admin.vendor.view',[$wr->vendor['id']])}}">{{ Str::limit($wr->vendor?$wr->vendor->restaurants[0]->name:__('messages.Restaurant deleted!'), 20, '...') }}</a>
                                             @else
                                             {{__('messages.Restaurant deleted!') }}
                                             @endif

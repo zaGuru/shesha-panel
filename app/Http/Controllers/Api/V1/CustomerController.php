@@ -9,11 +9,8 @@ use App\Models\Order;
 use App\Models\Food;
 use App\Models\OrderDetail;
 use App\Models\User;
-
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Zone;
 use Grimzy\LaravelMysqlSpatial\Types\Point;
@@ -56,6 +53,9 @@ class CustomerController extends Controller
             'contact_person_number' => $request->contact_person_number,
             'address_type' => $request->address_type,
             'address' => $request->address,
+            'floor' => $request->floor,
+            'road' => $request->road,
+            'house' => $request->house,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
             'zone_id' => $zone->id,
@@ -96,6 +96,9 @@ class CustomerController extends Controller
             'contact_person_number' => $request->contact_person_number,
             'address_type' => $request->address_type,
             'address' => $request->address,
+            'floor' => $request->floor,
+            'road' => $request->road,
+            'house' => $request->house,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
             'zone_id' => $zone->id,
@@ -141,7 +144,7 @@ class CustomerController extends Controller
 
         $details = OrderDetail::where(['order_id' => $request['order_id']])->get();
         foreach ($details as $det) {
-            $det['product_details'] = Helpers::product_data_formatting(json_decode($det['product_details'], true));
+            $det['product_details'] = json_decode($det['product_details'], true);
         }
 
         return response()->json($details, 200);
@@ -245,14 +248,14 @@ class CustomerController extends Controller
         }
 
 
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
 
         $interest = $request->user()->interest;
         $interest = isset($interest) ? json_decode($interest):null;
         // return response()->json($interest, 200);
-        
+
         $products =  Food::active()->whereHas('restaurant', function($q)use($zone_id){
-            $q->where('zone_id', $zone_id);
+            $q->whereIn('zone_id', $zone_id);
         })
         ->when(isset($interest), function($q)use($interest){
             return $q->whereIn('category_id',$interest);
@@ -260,7 +263,7 @@ class CustomerController extends Controller
         ->when($interest == null, function($q){
             return $q->popular();
         })->limit(5)->get();
-        $products = Helpers::product_data_formatting($products, true);
+        $products = Helpers::product_data_formatting($products, true, false, app()->getLocale());
         return response()->json($products, 200);
     }
 
@@ -275,7 +278,7 @@ class CustomerController extends Controller
         }
 
         $customer = $request->user();
-        $customer->zone_id = (integer)$request->header('zoneId');
+        $customer->zone_id = (integer)json_decode($request->header('zoneId'), true)[0];
         $customer->save();
         return response()->json([], 200);
     }

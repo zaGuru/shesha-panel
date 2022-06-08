@@ -97,7 +97,7 @@
                                 <div class="form-group form-check">
                                     <input type="checkbox" name="modules[]" value="customerList" class="form-check-input"
                                            id="customerList">
-                                    <label class="form-check-label qcont text-dark" for="customerList">{{__('messages.customers')}}</label>
+                                    <label class="form-check-label qcont text-dark" for="customerList">{{__('messages.customers')}} {{__('messages.section')}}</label>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -171,6 +171,15 @@
                                     <label class="form-check-label qcont text-dark" for="withdraw_list">{{__('messages.restaurant')}} {{__('messages.withdraws')}}</label>
                                 </div>
                             </div>
+
+                            <div class="col-md-3">
+                                <div class="form-group form-check">
+                                    <input type="checkbox" name="modules[]" value="pos" class="form-check-input"
+                                            id="pos">
+                                    <label class="form-check-label qcont text-dark" for="pos">{{__('messages.pos_system')}}</label>
+                                </div>
+                            </div>
+
                             <div class="col-md-3">
                                 <div class="form-group form-check">
                                     <input type="checkbox" name="modules[]" value="zone" class="form-check-input"

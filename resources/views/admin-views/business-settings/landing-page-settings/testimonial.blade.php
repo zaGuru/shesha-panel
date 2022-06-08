@@ -43,19 +43,38 @@
             <!-- Nav -->
             <ul class="nav nav-tabs page-header-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'index')}}">{{__('messages.text')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'index') }}">{{ __('messages.text') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'links')}}"  aria-disabled="true">{{__('messages.button_links')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'links') }}"
+                        aria-disabled="true">{{ __('messages.button_links') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'speciality')}}"  aria-disabled="true">{{__('messages.speciality')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'speciality') }}"
+                        aria-disabled="true">{{ __('messages.speciality') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('admin.business-settings.landing-page-settings', 'testimonial')}}"  aria-disabled="true">{{__('messages.testimonial')}}</a>
+                    <a class="nav-link active"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'testimonial') }}"
+                        aria-disabled="true">{{ __('messages.testimonial') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{route('admin.business-settings.landing-page-settings', 'image')}}"  aria-disabled="true">{{__('messages.image')}}</a>
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'feature') }}"
+                        aria-disabled="true">{{ __('messages.feature') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'image') }}"
+                        aria-disabled="true">{{ __('messages.image') }}</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link"
+                        href="{{ route('admin.business-settings.landing-page-settings', 'backgroundChange') }}"
+                        aria-disabled="true">{{ __('messages.header_footer_bg') }}</a>
                 </li>
             </ul>
             <!-- End Nav -->
@@ -72,7 +91,7 @@
                 @php($testimonial = isset($testimonial->value)?json_decode($testimonial->value, true):null)
 
                 @csrf
-                
+
                 <div class="form-group">
                     <label class="input-label" for="reviewer_name">{{__('messages.reviewer')}}</label>
                     <input type="text" id="reviewer_name"  name="reviewer_name" class="form-control" >
@@ -121,7 +140,7 @@
                                 <td scope="row">{{$key + 1}}</td>
                                 <td>
                                     <div class="media align-items-center">
-                                        <img class="avatar avatar-lg mr-3" src="{{asset('public/assets/landing/image')}}/{{$sp['img']}}" 
+                                        <img class="avatar avatar-lg mr-3" src="{{asset('public/assets/landing/image')}}/{{$sp['img']}}"
                                                 onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'" alt="{{$sp['name']}}">
                                         <div class="media-body">
                                             <h5 class="text-hover-primary mb-0">{{$sp['name']}}</h5>
@@ -173,7 +192,7 @@
         });
 
         $(document).on('ready', function () {
-            
+
         });
     </script>
 @endpush

@@ -4,14 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Restaurant;
 use App\Models\Currency;
 use App\Models\BusinessSetting;
 use Brian2694\Toastr\Facades\Toastr;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use App\CentralLogics\Helpers;
+use Illuminate\Support\Facades\Mail;
 
 class BusinessSettingsController extends Controller
 {
@@ -25,8 +23,7 @@ class BusinessSettingsController extends Controller
 
     public function business_setup(Request $request)
     {
-        if(env('APP_MODE')=='demo')
-        {
+        if (env('APP_MODE') == 'demo') {
             Toastr::info(trans('messages.update_option_is_disable_for_demo'));
             return back();
         }
@@ -38,11 +35,11 @@ class BusinessSettingsController extends Controller
         DB::table('business_settings')->updateOrInsert(['key' => 'currency'], [
             'value' => $request['currency']
         ]);
-        
+
         DB::table('business_settings')->updateOrInsert(['key' => 'timezone'], [
             'value' => $request['timezone']
         ]);
-        
+
         $curr_logo = BusinessSetting::where(['key' => 'logo'])->first();
         if ($request->has('logo')) {
             $image_name = Helpers::update('business/', $curr_logo->value, 'png', $request->file('logo'));
@@ -51,6 +48,17 @@ class BusinessSettingsController extends Controller
         }
 
         DB::table('business_settings')->updateOrInsert(['key' => 'logo'], [
+            'value' => $image_name
+        ]);
+
+        $fav_icon = BusinessSetting::where(['key' => 'icon'])->first();
+        if ($request->has('icon')) {
+            $image_name = Helpers::update('business/', $fav_icon->value, 'png', $request->file('icon'));
+        } else {
+            $image_name = $fav_icon['value'];
+        }
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'icon'], [
             'value' => $image_name
         ]);
 
@@ -69,11 +77,11 @@ class BusinessSettingsController extends Controller
         DB::table('business_settings')->updateOrInsert(['key' => 'footer_text'], [
             'value' => $request['footer_text']
         ]);
-        
+
         DB::table('business_settings')->updateOrInsert(['key' => 'customer_verification'], [
             'value' => $request['customer_verification']
         ]);
-        
+
         DB::table('business_settings')->updateOrInsert(['key' => 'order_delivery_verification'], [
             'value' => $request['odc']
         ]);
@@ -96,6 +104,9 @@ class BusinessSettingsController extends Controller
         DB::table('business_settings')->updateOrInsert(['key' => 'order_confirmation_model'], [
             'value' => $request['order_confirmation_model']
         ]);
+        DB::table('business_settings')->updateOrInsert(['key' => 'dm_tips_status'], [
+            'value' => $request['dm_tips_status']
+        ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'tax'], [
             'value' => $request['tax']
@@ -110,7 +121,7 @@ class BusinessSettingsController extends Controller
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'default_location'], [
-            'value' => json_encode(['lat'=>$request['latitude'], 'lng'=>$request['longitude']]) 
+            'value' => json_encode(['lat' => $request['latitude'], 'lng' => $request['longitude']])
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'admin_order_notification'], [
@@ -118,24 +129,23 @@ class BusinessSettingsController extends Controller
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'free_delivery_over'], [
-            'value' => $request['free_delivery_over_status']?$request['free_delivery_over']:null
+            'value' => $request['free_delivery_over_status'] ? $request['free_delivery_over'] : null
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'dm_maximum_orders'], [
             'value' => $request['dm_maximum_orders']
         ]);
 
-        // $languages = $request['language'];
+        $languages = $request['language'];
 
-        // if(in_array('en',$languages))
-        // {
-        //     unset($languages[array_search('en',$languages)]);
-        // }
-        // array_unshift($languages, 'en');
+        if (in_array('en', $languages)) {
+            unset($languages[array_search('en', $languages)]);
+        }
+        array_unshift($languages, 'en');
 
-        // DB::table('business_settings')->updateOrInsert(['key' => 'language'], [
-        //     'value' => json_encode($languages),
-        // ]);
+        DB::table('business_settings')->updateOrInsert(['key' => 'language'], [
+            'value' => json_encode($languages),
+        ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'timeformat'], [
             'value' => $request['time_format']
@@ -165,7 +175,15 @@ class BusinessSettingsController extends Controller
             'value' => $request['restaurant_self_registration']
         ]);
 
-        Toastr::success(trans('messages.successfully_updated_to_changes_restart_user_app'));
+        DB::table('business_settings')->updateOrInsert(['key' => 'schedule_order_slot_duration'], [
+            'value' => $request['schedule_order_slot_duration']
+        ]);
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'digit_after_decimal_point'], [
+            'value' => $request['digit_after_decimal_point']
+        ]);
+
+        Toastr::success( translate('Successfully updated. To see the changes in app restart the app.'));
         return back();
     }
 
@@ -176,25 +194,27 @@ class BusinessSettingsController extends Controller
 
     public function mail_config(Request $request)
     {
-        if(env('APP_MODE')=='demo')
-        {
+        if (env('APP_MODE') == 'demo') {
             Toastr::info(trans('messages.update_option_is_disable_for_demo'));
             return back();
         }
-        BusinessSetting::updateOrInsert(['key' => 'mail_config'],
-        [
-            'value' => json_encode([
-                "name" => $request['name'],
-                "host" => $request['host'],
-                "driver" => $request['driver'],
-                "port" => $request['port'],
-                "username" => $request['username'],
-                "email_id" => $request['email'],
-                "encryption" => $request['encryption'],
-                "password" => $request['password']
-            ]),
-            'updated_at' => now()
-        ]);
+        BusinessSetting::updateOrInsert(
+            ['key' => 'mail_config'],
+            [
+                'value' => json_encode([
+                    "status" => $request['status'] ?? 0,
+                    "name" => $request['name'],
+                    "host" => $request['host'],
+                    "driver" => $request['driver'],
+                    "port" => $request['port'],
+                    "username" => $request['username'],
+                    "email_id" => $request['email'],
+                    "encryption" => $request['encryption'],
+                    "password" => $request['password']
+                ]),
+                'updated_at' => now()
+            ]
+        );
         Toastr::success(trans('messages.configuration_updated_successfully'));
         return back();
     }
@@ -425,16 +445,18 @@ class BusinessSettingsController extends Controller
                 ]);
             }
         } elseif ($name == 'mercadopago') {
-            $payment = BusinessSetting::updateOrInsert(['key'=> 'mercadopago'],
-                ['value'      => json_encode([
-                    'status'        => $request['status'],
-                    'public_key'     => $request['public_key'],
-                    'access_token'     => $request['access_token'],
-                ]),
-                'updated_at' => now()]
+            $payment = BusinessSetting::updateOrInsert(
+                ['key' => 'mercadopago'],
+                [
+                    'value'      => json_encode([
+                        'status'        => $request['status'],
+                        'public_key'     => $request['public_key'],
+                        'access_token'     => $request['access_token'],
+                    ]),
+                    'updated_at' => now()
+                ]
             );
-        }
-        elseif($name == 'paymob_accept'){
+        } elseif ($name == 'paymob_accept') {
             DB::table('business_settings')->updateOrInsert(['key' => 'paymob_accept'], [
                 'value' => json_encode([
                     'status' => $request['status'],
@@ -445,8 +467,66 @@ class BusinessSettingsController extends Controller
                 ]),
                 'updated_at' => now()
             ]);
+        } elseif ($name == 'liqpay') {
+            DB::table('business_settings')->updateOrInsert(['key' => 'liqpay'], [
+                'value' => json_encode([
+                    'status' => $request['status'],
+                    'public_key' => $request['public_key'],
+                    'private_key' => $request['private_key']
+                ]),
+                'updated_at' => now()
+            ]);
+        } elseif ($name == 'paytm') {
+            DB::table('business_settings')->updateOrInsert(['key' => 'paytm'], [
+                'value' => json_encode([
+                    'status' => $request['status'],
+                    'paytm_merchant_key' => $request['paytm_merchant_key'],
+                    'paytm_merchant_mid' => $request['paytm_merchant_mid'],
+                    'paytm_merchant_website' => $request['paytm_merchant_website'],
+                    'paytm_refund_url' => $request['paytm_refund_url'],
+                ]),
+                'updated_at' => now()
+            ]);
+        } elseif ($name == 'bkash') {
+            DB::table('business_settings')->updateOrInsert(['key' => 'bkash'], [
+                'value' => json_encode([
+                    'status' => $request['status'],
+                    'api_key' => $request['api_key'],
+                    'api_secret' => $request['api_secret'],
+                    'username' => $request['username'],
+                    'password' => $request['password'],
+                ]),
+                'updated_at' => now()
+            ]);
+        } elseif ($name == 'paytabs') {
+            DB::table('business_settings')->updateOrInsert(['key' => 'paytabs'], [
+                'value' => json_encode([
+                    'status' => $request['status'],
+                    'profile_id' => $request['profile_id'],
+                    'server_key' => $request['server_key'],
+                    'base_url' => $request['base_url']
+                ]),
+                'updated_at' => now()
+            ]);
         }
+
         Toastr::success(trans('messages.payment_settings_updated'));
+        return back();
+    }
+    public function theme_settings()
+    {
+        return view('admin-views.business-settings.theme-settings');
+    }
+    public function update_theme_settings(Request $request)
+    {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(trans('messages.update_option_is_disable_for_demo'));
+            return back();
+        }
+        DB::table('business_settings')->updateOrInsert(['key' => 'theme'], [
+            'value' => $request['theme']
+        ]);
+        Toastr::success(translate('theme_settings_updated'));
         return back();
     }
 
@@ -457,6 +537,10 @@ class BusinessSettingsController extends Controller
 
     public function update_app_settings(Request $request)
     {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(trans('messages.update_option_is_disable_for_demo'));
+            return back();
+        }
         DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_android'], [
             'value' => $request['app_minimum_version_android']
         ]);
@@ -478,157 +562,185 @@ class BusinessSettingsController extends Controller
 
     public function landing_page_settings($tab)
     {
-        if($tab=='index')
-        {
+        if ($tab == 'index') {
             return view('admin-views.business-settings.landing-page-settings.index');
-        }
-        else if($tab == 'links')
-        {
+        } else if ($tab == 'links') {
             return view('admin-views.business-settings.landing-page-settings.links');
-        }
-        else if($tab == 'speciality')
-        {
+        } else if ($tab == 'speciality') {
             return view('admin-views.business-settings.landing-page-settings.speciality');
-        }
-        else if($tab == 'testimonial')
-        {
+        } else if ($tab == 'testimonial') {
             return view('admin-views.business-settings.landing-page-settings.testimonial');
-        }
-        else if($tab == 'image')
-        {
+        } else if ($tab == 'feature') {
+            return view('admin-views.business-settings.landing-page-settings.feature');
+        } else if ($tab == 'image') {
             return view('admin-views.business-settings.landing-page-settings.image');
+        } else if ($tab == 'backgroundChange') {
+
+            return view('admin-views.business-settings.landing-page-settings.backgroundChange');
         }
     }
 
     public function update_landing_page_settings(Request $request, $tab)
     {
-        if($tab=='text')
-        {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(trans('messages.update_option_is_disable_for_demo'));
+            return back();
+        }
+
+        if ($tab == 'text') {
             DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_text'], [
                 'value' => json_encode([
-                    'header_title_1'=>$request['header_title_1'], 
-                    'header_title_2'=>$request['header_title_2'], 
-                    'header_title_3'=>$request['header_title_3'],
-                    'about_title'=>$request['about_title'],
-                    'why_choose_us'=>$request['why_choose_us'],
-                    'why_choose_us_title'=>$request['why_choose_us_title'],
-                    'testimonial_title'=>$request['testimonial_title'],
-                    'footer_article'=>$request['footer_article']
+                    'header_title_1' => $request['header_title_1'],
+                    'header_title_2' => $request['header_title_2'],
+                    'header_title_3' => $request['header_title_3'],
+                    'about_title' => $request['about_title'],
+                    'why_choose_us' => $request['why_choose_us'],
+                    'why_choose_us_title' => $request['why_choose_us_title'],
+                    'testimonial_title' => $request['testimonial_title'],
+                    'mobile_app_section_heading' => $request['mobile_app_section_heading'],
+                    'mobile_app_section_text' => $request['mobile_app_section_text'],
+                    'feature_section_description' => $request['feature_section_description'],
+                    'feature_section_title' => $request['feature_section_title'],
+                    'footer_article' => $request['footer_article']
                 ])
             ]);
             Toastr::success(trans('messages.landing_page_text_updated'));
-        }
-        else if($tab=='links')
-        {
+        } else if ($tab == 'links') {
             DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_links'], [
                 'value' => json_encode([
-                    'app_url_android_status'=>$request['app_url_android_status'], 
-                    'app_url_android'=>$request['app_url_android'], 
-                    'app_url_ios_status'=>$request['app_url_ios_status'],
-                    'app_url_ios'=>$request['app_url_ios'],
-                    'web_app_url_status'=>$request['web_app_url_status'],
-                    'web_app_url'=>$request['web_app_url']
+                    'app_url_android_status' => $request['app_url_android_status'],
+                    'app_url_android' => $request['app_url_android'],
+                    'app_url_ios_status' => $request['app_url_ios_status'],
+                    'app_url_ios' => $request['app_url_ios'],
+                    'web_app_url_status' => $request['web_app_url_status'],
+                    'web_app_url' => $request['web_app_url']
                 ])
             ]);
             Toastr::success(trans('messages.landing_page_links_updated'));
-        }
-        else if($tab=='speciality')
-        {
+        } else if ($tab == 'speciality') {
             $data = [];
             $imageName = null;
             $speciality = BusinessSetting::where('key', 'speciality')->first();
-            if($speciality)
-            {
+            if ($speciality) {
                 $data = json_decode($speciality->value, true);
             }
-            if($request->has('image'))
-            {
+            if ($request->has('image')) {
                 $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
                 $request->image->move(public_path('assets/landing/image'), $imageName);
-
             }
             array_push($data, [
-                'img'=>$imageName,
-                'title'=>$request->speciality_title
+                'img' => $imageName,
+                'title' => $request->speciality_title
             ]);
 
             DB::table('business_settings')->updateOrInsert(['key' => 'speciality'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(trans('messages.landing_page_speciality_updated'));
-        }
-        else if($tab=='testimonial')
-        {
+        } else if ($tab == 'feature') {
+            $data = [];
+            $imageName = null;
+            $feature = BusinessSetting::where('key', 'feature')->first();
+            if ($feature) {
+                $data = json_decode($feature->value, true);
+            }
+            if ($request->has('image')) {
+                $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
+                $request->image->move(public_path('assets/landing/image'), $imageName);
+            }
+            array_push($data, [
+                'img' => $imageName,
+                'title' => $request->feature_title,
+                'feature_description' => $request->feature_description
+            ]);
+
+            DB::table('business_settings')->updateOrInsert(['key' => 'feature'], [
+                'value' => json_encode($data)
+            ]);
+            Toastr::success(trans('messages.landing_page_feature_updated'));
+        } else if ($tab == 'testimonial') {
             $data = [];
             $imageName = null;
             $speciality = BusinessSetting::where('key', 'testimonial')->first();
-            if($speciality)
-            {
+            if ($speciality) {
                 $data = json_decode($speciality->value, true);
             }
-            if($request->has('image'))
-            {
+            if ($request->has('image')) {
                 $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
                 $request->image->move(public_path('assets/landing/image'), $imageName);
-
             }
             array_push($data, [
-                'img'=>$imageName,
-                'name'=>$request->reviewer_name,
-                'position'=>$request->reviewer_designation,
-                'detail'=>$request->review,
+                'img' => $imageName,
+                'name' => $request->reviewer_name,
+                'position' => $request->reviewer_designation,
+                'detail' => $request->review,
             ]);
 
             DB::table('business_settings')->updateOrInsert(['key' => 'testimonial'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(trans('messages.landing_page_testimonial_updated'));
-        }
-        else if($tab=='image')
-        {
+        } else if ($tab == 'image') {
             $data = [];
-            $speciality = BusinessSetting::where('key', 'landing_page_images')->first();
-            if($speciality)
-            {
-                $data = json_decode($speciality->value, true);
+            $images = BusinessSetting::where('key', 'landing_page_images')->first();
+            if ($images) {
+                $data = json_decode($images->value, true);
             }
-            if($request->has('top_content_image'))
-            {
+            if ($request->has('top_content_image')) {
                 $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
                 $request->top_content_image->move(public_path('assets/landing/image'), $imageName);
                 $data['top_content_image'] = $imageName;
             }
-            if($request->has('about_us_image'))
-            {
+            if ($request->has('about_us_image')) {
                 $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
                 $request->about_us_image->move(public_path('assets/landing/image'), $imageName);
                 $data['about_us_image'] = $imageName;
             }
 
+            if ($request->has('feature_section_image')) {
+                $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
+                $request->feature_section_image->move(public_path('assets/landing/image'), $imageName);
+                $data['feature_section_image'] = $imageName;
+            }
+            if ($request->has('mobile_app_section_image')) {
+                $imageName = \Carbon\Carbon::now()->toDateString() . "-" . uniqid() . ".png";
+                $request->mobile_app_section_image->move(public_path('assets/landing/image'), $imageName);
+                $data['mobile_app_section_image'] = $imageName;
+            }
             DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_images'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(trans('messages.landing_page_image_updated'));
+        } else if ($tab == 'backgroundChange') {
+            DB::table('business_settings')->updateOrInsert(['key' => 'backgroundChange'], [
+                'value' => json_encode([
+                    'header-bg' => $request['header-bg'],
+                    'footer-bg' => $request['footer-bg'],
+                    'landing-page-bg' => $request['landing-page-bg']
+                ])
+            ]);
+            Toastr::success(trans('messages.background_updated'));
         }
-
         return back();
     }
 
     public function delete_landing_page_settings($tab, $key)
     {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(trans('messages.update_option_is_disable_for_demo'));
+            return back();
+        }
         $item = BusinessSetting::where('key', $tab)->first();
-        $data = $item?json_decode($item->value, true): null;
-        if($data && array_key_exists($key, $data))
-        {   
-            if($data[$key]['img'] && file_exists(public_path('assets/landing/image').$data[$key]['img']))
-            {
-                unlink(public_path('assets/landing/image').$data[$key]['img']);
+        $data = $item ? json_decode($item->value, true) : null;
+        if ($data && array_key_exists($key, $data)) {
+            if ($data[$key]['img'] && file_exists(public_path('assets/landing/image') . $data[$key]['img'])) {
+                unlink(public_path('assets/landing/image') . $data[$key]['img']);
             }
-            array_splice($data,$key,1);
+            array_splice($data, $key, 1);
 
             $item->value = json_encode($data);
             $item->save();
-            Toastr::success(trans('messages.'.$tab).' '.trans('messages.deleted'));
+            Toastr::success(trans('messages.' . $tab) . ' ' . trans('messages.deleted'));
             return back();
         }
         Toastr::error(trans('messages.not_found'));
@@ -825,7 +937,7 @@ class BusinessSettingsController extends Controller
                 'message' => $request['delivery_boy_delivered_message']
             ])
         ]);
-        
+
         DB::table('business_settings')->updateOrInsert(['key' => 'order_handover_message'], [
             'value' => json_encode([
                 'status' => $request['order_handover_message_status'] == 1 ? 1 : 0,
@@ -860,14 +972,14 @@ class BusinessSettingsController extends Controller
     public function location_setup(Request $request)
     {
         $restaurant = Helpers::get_restaurant_id();
-        $restaurant->latitude=$request['latitude'];
-        $restaurant->longitude=$request['longitude'];
+        $restaurant->latitude = $request['latitude'];
+        $restaurant->longitude = $request['longitude'];
         $restaurant->save();
 
         Toastr::success(trans('messages.settings_updated'));
         return back();
     }
-    
+
     public function config_setup()
     {
         return view('admin-views.business-settings.config');
@@ -901,7 +1013,7 @@ class BusinessSettingsController extends Controller
     {
         $data = BusinessSetting::where('key', 'social_login')->first();
         $socialLoginServices = json_decode($data->value, true);
-        return view('admin-views.business-settings.social-login.view',compact('socialLoginServices'));
+        return view('admin-views.business-settings.social-login.view', compact('socialLoginServices'));
     }
 
     public function updateSocialLogin($service, Request $request)
@@ -925,7 +1037,7 @@ class BusinessSettingsController extends Controller
             'value' => $credential_array
         ]);
 
-        Toastr::success(trans('messages.credential_updated',['service'=>$service]));
+        Toastr::success(trans('messages.credential_updated', ['service' => $service]));
         return redirect()->back();
     }
 
@@ -951,5 +1063,19 @@ class BusinessSettingsController extends Controller
         Toastr::success('Updated Successfully');
         return back();
     }
-    
+
+    public function send_mail(Request $request)
+    {
+        $response_flag = 0;
+        try {
+
+            Mail::to($request->email)->send(new \App\Mail\TestEmailSender());
+            $response_flag = 1;
+        } catch (\Exception $exception) {
+            info($exception);
+            $response_flag = 2;
+        }
+
+        return response()->json(['success' => $response_flag]);
+    }
 }

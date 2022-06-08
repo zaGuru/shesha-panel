@@ -80,8 +80,8 @@ class InstallController extends Controller
         if (self::check_database_connection($request->DB_HOST, $request->DB_DATABASE, $request->DB_USERNAME, $request->DB_PASSWORD)) {
 
             $key = base64_encode(random_bytes(32));
-            $output = 'APP_NAME=stackfood'.time().
-                    'APP_ENV=live
+            $output = 'APP_NAME=stackfood' . time() .
+                'APP_ENV=live
                     APP_KEY=base64:' . $key . '
                     APP_DEBUG=false
                     APP_INSTALL=true
@@ -115,7 +115,7 @@ class InstallController extends Controller
                     BUYER_USERNAME=' . session('username') . '
                     SOFTWARE_ID=MzM1NzE3NTA=
 
-                    SOFTWARE_VERSION=5.2
+                    SOFTWARE_VERSION=5.6.1
                     ';
             $file = fopen(base_path('.env'), 'w');
             fwrite($file, $output);

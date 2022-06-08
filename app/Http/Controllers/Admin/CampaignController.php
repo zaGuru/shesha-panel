@@ -12,6 +12,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\CentralLogics\Helpers;
+use App\Models\Translation;
 
 class CampaignController extends Controller
 {
@@ -46,14 +47,38 @@ class CampaignController extends Controller
         }
 
         $campaign = new Campaign;
-        $campaign->title = $request->title;
-        $campaign->description = $request->description;
+        $campaign->title = $request->title[array_search('en', $request->lang)];
+        $campaign->description = $request->description[array_search('en', $request->lang)];
         $campaign->image = Helpers::upload('campaign/', 'png', $request->file('image'));
         $campaign->start_date = $request->start_date;
         $campaign->end_date = $request->end_date;
         $campaign->start_time = $request->start_time;
         $campaign->end_time = $request->end_time;
         $campaign->save();
+        
+        $data = [];
+        foreach ($request->lang as $index => $key) {
+            if ($request->title[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\Campaign',
+                    'translationable_id' => $campaign->id,
+                    'locale' => $key,
+                    'key' => 'title',
+                    'value' => $request->title[$index],
+                ));
+            }
+            if ($request->description[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\Campaign',
+                    'translationable_id' => $campaign->id,
+                    'locale' => $key,
+                    'key' => 'description',
+                    'value' => $request->description[$index],
+                ));
+            }
+        }
+
+        Translation::insert($data);
 
         return response()->json([], 200);
     }
@@ -69,14 +94,36 @@ class CampaignController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)]);
         }
         
-        $campaign->title = $request->title;
-        $campaign->description = $request->description;
+        $campaign->title = $request->title[array_search('en', $request->lang)];
+        $campaign->description = $request->description[array_search('en', $request->lang)];
         $campaign->image = $request->has('image') ? Helpers::update('campaign/', $campaign->image, 'png', $request->file('image')) : $campaign->image;;
         $campaign->start_date = $request->start_date;
         $campaign->end_date = $request->end_date;
         $campaign->start_time = $request->start_time;
         $campaign->end_time = $request->end_time;
         $campaign->save();
+
+        foreach ($request->lang as $index => $key) {
+            if ($request->title[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\Campaign',
+                        'translationable_id' => $campaign->id,
+                        'locale' => $key,
+                        'key' => 'title'],
+                    ['value' => $request->title[$index]]
+                );
+            }
+            if ($request->description[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\Campaign',
+                        'translationable_id' => $campaign->id,
+                        'locale' => $key,
+                        'key' => 'description'],
+                    ['value' => $request->description[$index]]
+                );
+            }
+        }
+
         return response()->json([], 200);
     }
     
@@ -182,8 +229,8 @@ class CampaignController extends Controller
             }
         }
         $campaign->admin_id = auth('admin')->id();
-        $campaign->title = $request->title;
-        $campaign->description = $request->description;
+        $campaign->title = $request->title[array_search('en', $request->lang)];
+        $campaign->description = $request->description[array_search('en', $request->lang)];
         $campaign->image = Helpers::upload('campaign/', 'png', $request->file('image'));
         $campaign->start_date = $request->start_date;
         $campaign->end_date = $request->end_date;
@@ -198,18 +245,42 @@ class CampaignController extends Controller
         $campaign->restaurant_id = $request->restaurant_id;
         $campaign->veg = $request->veg;
         $campaign->save();
+        
+        $data = [];
+        foreach ($request->lang as $index => $key) {
+            if ($request->title[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\ItemCampaign',
+                    'translationable_id' => $p->id,
+                    'locale' => $key,
+                    'key' => 'title',
+                    'value' => $request->title[$index],
+                ));
+            }
+            if ($request->description[$index] && $key != 'en') {
+                array_push($data, array(
+                    'translationable_type' => 'App\Models\ItemCampaign',
+                    'translationable_id' => $p->id,
+                    'locale' => $key,
+                    'key' => 'description',
+                    'value' => $request->description[$index],
+                ));
+            }
+        }
+        Translation::insert($data);
+
         return response()->json([], 200);
     }
 
     public function updateItem(ItemCampaign $campaign, Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|max:191|unique:item_campaigns,title,'.$campaign->id,
+            'title' => 'required|array',
             'category_id' => 'required',
             'price' => 'required|numeric|between:0.01,999999999999.99',
             'restaurant_id' => 'required',
             'veg' => 'required',
-            'description'=>'max:1000',
+            'description.*'=>'max:1000',
         ]);
         
         if ($validator->fails()) {
@@ -293,8 +364,8 @@ class CampaignController extends Controller
                 array_push($variations, $item);
             }
         }
-        $campaign->title = $request->title;
-        $campaign->description = $request->description;
+        $campaign->title = $request->title[array_search('en', $request->lang)];
+        $campaign->description = $request->description[array_search('en', $request->lang)];
         $campaign->image = $request->has('image') ? Helpers::update('campaign/', $campaign->image, 'png', $request->file('image')) : $campaign->image;
         $campaign->start_date = $request->start_date;
         $campaign->end_date = $request->end_date;
@@ -309,6 +380,28 @@ class CampaignController extends Controller
         $campaign->add_ons = $request->has('addon_ids') ? json_encode($request->addon_ids) : json_encode([]);
         $campaign->veg = $request->veg;
         $campaign->save();
+
+        foreach ($request->lang as $index => $key) {
+            if ($request->title[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\ItemCampaign',
+                        'translationable_id' => $campaign->id,
+                        'locale' => $key,
+                        'key' => 'title'],
+                    ['value' => $request->title[$index]]
+                );
+            }
+            if ($request->description[$index] && $key != 'en') {
+                Translation::updateOrInsert(
+                    ['translationable_type' => 'App\Models\ItemCampaign',
+                        'translationable_id' => $campaign->id,
+                        'locale' => $key,
+                        'key' => 'description'],
+                    ['value' => $request->description[$index]]
+                );
+            }
+        }
+
         return response()->json([], 200);
     }
 
@@ -316,11 +409,11 @@ class CampaignController extends Controller
     {
         if($type=='basic')
         {
-            $campaign = Campaign::findOrFail($campaign);
+            $campaign = Campaign::withoutGlobalScope('translate')->findOrFail($campaign);
         }
         else
         {
-            $campaign = ItemCampaign::findOrFail($campaign);
+            $campaign = ItemCampaign::withoutGlobalScope('translate')->findOrFail($campaign);
         }
         return view('admin-views.campaign.'.$type.'.edit', compact('campaign'));
     }
@@ -366,6 +459,7 @@ class CampaignController extends Controller
         if (Storage::disk('public')->exists('campaign/' . $campaign->image)) {
             Storage::disk('public')->delete('campaign/' . $campaign->image);
         }
+        $campaign->translations()->delete();
         $campaign->delete();
         Toastr::success(trans('messages.campaign_deleted_successfully'));
         return back();
@@ -375,6 +469,7 @@ class CampaignController extends Controller
         if (Storage::disk('public')->exists('campaign/' . $campaign->image)) {
             Storage::disk('public')->delete('campaign/' . $campaign->image);
         }
+        $campaign->translations()->delete();
         $campaign->delete();
         Toastr::success(trans('messages.campaign_deleted_successfully'));
         return back();

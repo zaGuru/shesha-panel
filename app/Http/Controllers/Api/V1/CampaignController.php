@@ -19,11 +19,15 @@ class CampaignController extends Controller
                 'errors' => $errors
             ], 200);
         }
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
         try {
             $campaigns = Campaign::whereHas('restaurants', function($query)use($zone_id){
-                $query->where('zone_id', $zone_id);
-            })->running()->active()->get();
+                $query->whereIn('zone_id', $zone_id);
+            })
+            ->with('restaurants',function($query)use($zone_id){
+                return $query->WithOpen()->whereIn('zone_id', $zone_id);
+            })
+            ->running()->active()->get();
             $campaigns=Helpers::basic_campaign_data_formatting($campaigns, true);
             return response()->json($campaigns, 200);
         } catch (\Exception $e) {
@@ -38,7 +42,7 @@ class CampaignController extends Controller
                 'errors' => $errors
             ], 200);
         }
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
 
         $validator = Validator::make($request->all(), [
             'basic_campaign_id' => 'required',
@@ -49,8 +53,12 @@ class CampaignController extends Controller
         }
         try {
             $campaign = Campaign::with(['restaurants'=>function($q)use($zone_id){
-                $q->where('zone_id', $zone_id);
-            }])->running()->active()->whereId($request->basic_campaign_id)->first();
+                $q->whereIn('zone_id', $zone_id);
+            }])
+            ->with('restaurants',function($query)use($zone_id){
+                return $query->WithOpen()->whereIn('zone_id', $zone_id);
+            })
+            ->running()->active()->whereId($request->basic_campaign_id)->first();
 
             $campaign=Helpers::basic_campaign_data_formatting($campaign, false);
 
@@ -69,12 +77,12 @@ class CampaignController extends Controller
                 'errors' => $errors
             ], 200);
         }
-        $zone_id= $request->header('zoneId');
+        $zone_id= json_decode($request->header('zoneId'), true);
         try {
             $campaigns = ItemCampaign::active()->whereHas('restaurant', function($query)use($zone_id){
-                $query->where('zone_id', $zone_id);
+                $query->whereIn('zone_id', $zone_id);
             })->running()->active()->get();
-            $campaigns= Helpers::product_data_formatting($campaigns, true);
+            $campaigns= Helpers::product_data_formatting($campaigns, true, false, app()->getLocale());
             return response()->json($campaigns, 200);
         } catch (\Exception $e) {
             return response()->json([], 200);

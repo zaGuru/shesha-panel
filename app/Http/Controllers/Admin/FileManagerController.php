@@ -33,6 +33,10 @@ class FileManagerController extends Controller
 
     public function upload(Request $request)
     {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(trans('messages.upload_option_is_disable_for_demo'));
+            return back();
+        }
         $request->validate([
             'images' => 'required_without:file',
             'file' => 'required_without:images',

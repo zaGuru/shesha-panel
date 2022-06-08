@@ -8,15 +8,16 @@ use App\Models\DMReview;
 use App\Models\Zone;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\CentralLogics\Helpers;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class DeliveryManController extends Controller
 {
     public function index()
     {
+       
         return view('admin-views.delivery-man.index');
     }
 
@@ -24,7 +25,7 @@ class DeliveryManController extends Controller
     {
         $zone_id = $request->query('zone_id', 'all');
         $delivery_men = DeliveryMan::when(is_numeric($zone_id), function($query) use($zone_id){
-            return $query->where('zone_id', $zone_id);           
+            return $query->where('zone_id', $zone_id);
         })->with('zone')->where('type','zone_wise')->latest()->paginate(config('default_pagination'));
         $zone = is_numeric($zone_id)?Zone::findOrFail($zone_id):null;
         return view('admin-views.delivery-man.list', compact('delivery_men', 'zone'));
@@ -66,7 +67,7 @@ class DeliveryManController extends Controller
         {
             $date = $request->query('date');
             return view('admin-views.delivery-man.view.transaction', compact('dm', 'date'));
-        }        
+        }
     }
 
     public function store(Request $request)
@@ -195,6 +196,16 @@ class DeliveryManController extends Controller
         $delivery_man->application_status = $request->status;
         if($request->status == 'approved') $delivery_man->status = 1;
         $delivery_man->save();
+        
+        try{
+            if( config('mail.status')) {
+                Mail::to($request['email'])->send(new \App\Mail\SelfRegistration($request->status, $delivery_man->f_name.' '.$delivery_man->l_name));
+            }
+            
+        }catch(\Exception $ex){
+            info($ex);
+        }
+        
 
         Toastr::success(trans('messages.application_status_updated_successfully'));
         return back();

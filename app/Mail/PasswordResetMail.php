@@ -16,11 +16,13 @@ class PasswordResetMail extends Mailable
      * @return void
      */
 
-    protected $reset_url;
+    protected $token;
+    protected $name;
 
-    public function __construct($reset_url)
+    public function __construct($token, $name)
     {
-        $this->reset_url = $reset_url;
+        $this->token = $token;
+        $this->name = $name;
     }
 
     /**
@@ -30,7 +32,6 @@ class PasswordResetMail extends Mailable
      */
     public function build()
     {
-        $reset_url = $this->reset_url;
-        return $this->view('email-templates.admin-password-reset', ['url' => $reset_url]);
+        return $this->view('email-templates.password-reset', ['token' => $this->token, 'name'=>$this->name]);
     }
 }

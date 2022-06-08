@@ -268,17 +268,13 @@
                         <div class="w-100">
                             <div class="d-flex flex-row p-1">
                                 <select id='customer' name="customer_id" data-placeholder="{{__('messages.walk_in_customer')}}" class="js-data-example-ajax form-control">
-
                                 </select>
-                                <!-- <button class="btn btn-sm btn-white btn-outline-primary ml-1" type="button" title="{{__('messages.add_customer')}}">
-                                    <i class="tio-add-circle text-dark"></i>
-                                </button> -->
                             </div>
                         </div>
                         <div class='w-100' id="cart">
                             @include('vendor-views.pos._cart')
                         </div>
-                    </div> 
+                    </div>
 				</div>
 			</div>
 		</div><!-- container //  -->
@@ -328,12 +324,7 @@
 
 </main>
 <!-- ========== END MAIN CONTENT ========== -->
-
-<!-- ========== END SECONDARY CONTENTS ========== -->
-
 <!-- JS Implementing Plugins -->
-
-<!-- JS Front -->
 <script src="{{asset('public/assets/admin')}}/js/vendor.min.js"></script>
 <script src="{{asset('public/assets/admin')}}/js/theme.min.js"></script>
 <script src="{{asset('public/assets/admin')}}/js/sweet_alert.js"></script>
@@ -584,7 +575,7 @@
                             text: "{{__('messages.product_already_added_in_cart')}}"
                         });
                         return false;
-                    } 
+                    }
                     else if (data.data == 2) {
                         updateCart();
                         Swal.fire({
@@ -592,9 +583,9 @@
                             title: 'Cart',
                             text: "{{__('messages.product_has_been_updated_in_cart')}}"
                         });
-                        
+
                         return false;
-                    } 
+                    }
                     else if (data.data == 0) {
                         Swal.fire({
                             icon: 'error',
@@ -695,7 +686,7 @@
         //     });
         //     $(this).val($(this).data('oldValue'));
         // }
-    
+
 
         // Allow: backspace, delete, tab, escape, enter and .
         if(e.type == 'keydown')

@@ -43,17 +43,17 @@
                         </div>
                     </div>
 
-                    <!--<div class="row">-->
-                    <!--    <div class="col-md-6 col-12">-->
-                    <!--        <div class="form-group">-->
-                    <!--            <label class="input-label" for="exampleFormControlInput1">{{__('messages.identity')}} {{__('messages.type')}}</label>-->
-                    <!--            <select name="identity_type" class="form-control">-->
-                    <!--                <option value="passport">{{__('messages.passport')}}</option>-->
-                    <!--                <option value="driving_license">{{__('messages.driving')}} {{__('messages.license')}}</option>-->
-                    <!--                <option value="nid">{{__('messages.nid')}}</option>-->
-                    <!--            </select>-->
-                    <!--        </div>-->
-                    <!--    </div>-->
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            <div class="form-group">
+                                <label class="input-label" for="exampleFormControlInput1">{{__('messages.identity')}} {{__('messages.type')}}</label>
+                                <select name="identity_type" class="form-control">
+                                    <option value="passport">{{__('messages.passport')}}</option>
+                                    <option value="driving_license">{{__('messages.driving')}} {{__('messages.license')}}</option>
+                                    <option value="nid">{{__('messages.nid')}}</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 <label class="input-label" for="exampleFormControlInput1">{{__('messages.identity')}} {{__('messages.number')}}</label>

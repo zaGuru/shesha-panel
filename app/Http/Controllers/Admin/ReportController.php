@@ -51,7 +51,7 @@ class ReportController extends Controller
         $restaurant = is_numeric($restaurant_id)?Restaurant::findOrFail($restaurant_id):null;
         $foods = \App\Models\Food::withoutGlobalScope(RestaurantScope::class)->withCount([
             'orders' => function($query)use($from, $to) {
-                $query->whereBetween('created_at', [$from, $to]);
+                $query->whereBetween('created_at', [$from.' 00:00:00', $to.' 23:59:59']);
             },
         ])
         ->when(isset($zone), function($query)use($zone){
@@ -60,8 +60,8 @@ class ReportController extends Controller
         ->when(isset($restaurant), function($query)use($restaurant){
             return $query->where('restaurant_id', $restaurant->id);
         })
+        ->orderBy('orders_count', 'desc')
         ->paginate(config('default_pagination'))->withQueryString();
-
         return view('admin-views.report.food-wise-report', compact('zone', 'restaurant', 'foods'));
     }
 

@@ -31,6 +31,7 @@ class VendorController extends Controller
         $discount=Helpers::get_restaurant_discount($vendor->restaurants[0]);
         unset($restaurant['discount']);
         $restaurant['discount']=$discount;
+        $restaurant['schedules']=$restaurant->schedules()->get();
 
         $vendor['order_count'] =$vendor->orders->count();
         $vendor['todays_order_count'] =$vendor->todaysorders->count();
@@ -120,7 +121,7 @@ class VendorController extends Controller
             $query->where('id', $vendor->id);
         })
         ->with('customer')
-         
+
         ->where(function($query)use($vendor){
             if(config('order_confirmation_model') == 'restaurant' || $vendor->restaurants[0]->self_delivery_system)
             {
@@ -143,7 +144,7 @@ class VendorController extends Controller
         $orders= Helpers::order_data_formatting($orders, true);
         return response()->json($orders, 200);
     }
-    
+
     public function get_completed_orders(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -269,9 +270,9 @@ class VendorController extends Controller
             {
                 $ol = OrderLogic::create_transaction($order,'admin', null);
             }
-            
+
             $order->payment_status = 'paid';
-        } 
+        }
 
         if($request->status == 'delivered')
         {
@@ -291,9 +292,11 @@ class VendorController extends Controller
                 $dm = $order->delivery_man;
                 $dm->current_orders = $dm->current_orders>1?$dm->current_orders-1:0;
                 $dm->save();
-            }                   
+            }
         }
-
+        if($request->status == 'processing') {
+            $order->processing_time = isset($request->processing_time) ? $request->processing_time : explode('-', $order['restaurant']['delivery_time'])[0];
+        }
         $order->order_status = $request['status'];
         $order[$request['status']] = now();
         $order->save();
@@ -320,9 +323,8 @@ class VendorController extends Controller
         ->Notpos()
         ->first();
         $details = $order->details;
-
-        $details = Helpers::order_details_data_formatting($details);
-        return response()->json($details, 200);
+        $order['details'] = Helpers::order_details_data_formatting($details);
+        return response()->json(['order' => $order],200);
     }
 
     public function get_all_orders(Request $request)
@@ -367,7 +369,7 @@ class VendorController extends Controller
         $notifications->append('data');
 
         $user_notifications = UserNotification::where('vendor_id', $vendor->id)->where('created_at', '>=', \Carbon\Carbon::today()->subDays(7))->get();
-        
+
         $notifications =  $notifications->merge($user_notifications);
 
         try {
@@ -396,6 +398,13 @@ class VendorController extends Controller
                 $item['available_date_ends']=$item->end_date->format('Y-m-d');
                 unset($item['end_date']);
             }
+
+            if (count($item['translations'])>0 ) {
+                $translate = array_column($item['translations']->toArray(), 'value', 'key');
+                $item['title'] = $translate['title'];
+                $item['description'] = $translate['description'];
+            }
+
             $item['is_joined'] = in_array($restaurant_id, $restaurant_ids)?true:false;
             unset($item['restaurants']);
             array_push($data, $item);
@@ -456,13 +465,13 @@ class VendorController extends Controller
 
         $type = $request->query('type', 'all');
 
-        $paginator = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
+        $paginator = Food::withoutGlobalScope('translate')->type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
         $data = [
             'total_size' => $paginator->total(),
             'limit' => $limit,
             'offset' => $offset,
-            'products' => Helpers::product_data_formatting($paginator->items(), true)
-        ];   
+            'products' => Helpers::product_data_formatting($paginator->items(), true, true, app()->getLocale())
+        ];
 
         return response()->json($data, 200);
     }

@@ -49,6 +49,41 @@
             </div>
         </div>
         <!-- End Page Header -->
+        <div class="row mb-2">
+            <!-- Collected Cash Card Example -->
+            <div class="for-card col-lg-6 col-md-6 col-sm-6 col-12 mb-1">
+                <div class="card r shadow h-100 for-card-body-4  badge-dark">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class=" for-card-text font-weight-bold  text-uppercase mb-1">{{__('messages.wallet')}} {{__('messages.balance')}}</div>
+                                <div class="for-card-count">{{$customer->wallet_balance??0}}</div>
+                            </div>
+                            <div class="col-auto for-margin">
+                                <i class="fas fa-money-bill for-fa-fa-4  fa-2x text-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Requests Card Example -->
+            <div class="for-card col-lg-6 col-md-6 col-sm-6 col-12 mb-1">
+                <div class="card r shadow h-100 for-card-body-4 text-white" style="background:#362222;">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class=" for-card-text font-weight-bold  text-uppercase mb-1">{{__('messages.loyalty_point')}} {{__('messages.balance')}}</div>
+                                <div class="for-card-count">{{$customer->loyalty_point??0}}</div>
+                            </div>
+                            <div class="col-auto for-margin">
+                                <i class="fas fa-money-bill for-fa-fa-4  fa-2x text-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="row" id="printableArea">
             <div class="col-lg-8 mb-3 mb-lg-0">
@@ -62,7 +97,8 @@
                                class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
                                data-hs-datatables-options='{
                                  "order": [],
-                                 "orderCellsTop": true
+                                 "orderCellsTop": true,
+                                 "paging":false
                                }'>
                             <thead class="thead-light">
                             <tr>
@@ -88,7 +124,7 @@
                             <tbody>
                             @foreach($orders as $key=>$order)
                                 <tr>
-                                    <td>{{$key+1}}</td>
+                                    <td>{{$key+$orders->firstItem()}}</td>
                                     <td class="table-column-pl-0 text-center">
                                         <a href="{{route('admin.order.details',['id'=>$order['id']])}}">{{$order['id']}}</a>
                                     </td>
@@ -153,7 +189,7 @@
                                 </div>
                                 <div class="media-body">
                                     <span
-                                        class="text-body text-hover-primary">{{$customer->orders->count()}} {{__('messages.orders')}}</span>
+                                        class="text-body text-hover-primary">{{$customer->order_count}} {{__('messages.orders')}}</span>
                                 </div>
                                 <div class="media-body text-right">
                                     {{--<i class="tio-chevron-right text-body"></i>--}}

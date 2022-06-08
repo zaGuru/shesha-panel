@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\Routing\RouteCompiler;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,10 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['namespace' => 'Api\V1'], function () {
+Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function () {
 
     Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
-        Route::post('register', 'CustomerAuthController@register');
+        Route::post('sign-up', 'CustomerAuthController@register');
         Route::post('login', 'CustomerAuthController@login');
         Route::post('verify-phone', 'CustomerAuthController@verify_phone');
 
@@ -95,6 +96,11 @@ Route::group(['namespace' => 'Api\V1'], function () {
         
         // Business setup
         Route::put('update-business-setup', 'BusinessSettingsController@update_restaurant_setup');
+
+        // Reataurant schedule
+        Route::post('schedule/store', 'BusinessSettingsController@add_schedule');
+        Route::delete('schedule/{restaurant_schedule}', 'BusinessSettingsController@remove_schedule');
+
         // Attributes
         Route::get('attributes', 'AttributeController@list');
 
@@ -123,6 +129,8 @@ Route::group(['namespace' => 'Api\V1'], function () {
             Route::delete('delete', 'FoodController@delete');
             Route::get('status', 'FoodController@status');
             Route::POST('search', 'FoodController@search');
+            Route::get('reviews', 'FoodController@reviews');
+
         });
 
         // POS
@@ -168,8 +176,6 @@ Route::group(['namespace' => 'Api\V1'], function () {
         Route::get('/', 'BannerController@get_banners');
     });
 
-
-
     Route::group(['prefix' => 'categories'], function () {
         Route::get('/', 'CategoryController@get_categories');
         Route::get('childes/{category_id}', 'CategoryController@get_childes');
@@ -186,6 +192,16 @@ Route::group(['namespace' => 'Api\V1'], function () {
         Route::post('update-interest', 'CustomerController@update_interest');
         Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
         Route::get('suggested-foods', 'CustomerController@get_suggested_food');
+
+        Route::group(['prefix'=>'loyalty-point'], function() {
+            Route::post('point-transfer', 'LoyaltyPointController@point_transfer');
+            Route::get('transactions', 'LoyaltyPointController@transactions');            
+        });
+
+        Route::group(['prefix'=>'wallet'], function() {
+            Route::get('transactions', 'WalletController@transactions');            
+        });
+
 
         Route::group(['prefix' => 'address'], function () {
             Route::get('list', 'CustomerController@address_list');
