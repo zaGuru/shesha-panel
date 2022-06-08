@@ -140,7 +140,7 @@ class OrderController extends Controller
                 {
                     return response()->json([
                         'errors' => [
-                            ['code' => 'coupon', 'message' => trans('messages.not_found')]                            
+                            ['code' => 'coupon', 'message' => trans('messages.not_found')]
                         ]
                     ], 404);
                 }
@@ -248,7 +248,7 @@ class OrderController extends Controller
                         $price = $product['price'];
                     }
                     $product->tax = $restaurant->tax;
-                    $product = Helpers::product_data_formatting($product);
+                    $product = Helpers::product_data_formatting($product, false, false, app()->getLocale());
                     $addon_data = Helpers::calculate_addon_price(\App\Models\AddOn::whereIn('id',$c['add_on_ids'])->get(), $c['add_on_qtys']);
                     $or_d = [
                         'food_id' => null,
